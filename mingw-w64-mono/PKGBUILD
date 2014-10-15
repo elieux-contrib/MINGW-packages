@@ -12,6 +12,7 @@ license=('GPL' 'LGPL2.1' 'MPL' 'custom:MITX11')
 arch=('any')
 makedepends=("${MINGW_PACKAGE_PREFIX}-bison")
 depends=("${MINGW_PACKAGE_PREFIX}-zlib"
+         "${MINGW_PACKAGE_PREFIX}-libiconv"
          "${MINGW_PACKAGE_PREFIX}-python3")
 options=('!makeflags')
 source=(http://download.mono-project.com/sources/mono/${_realname}-${pkgver}.tar.bz2
