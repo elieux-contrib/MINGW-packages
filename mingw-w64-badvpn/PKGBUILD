@@ -5,7 +5,7 @@
 _realname=badvpn
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=1.999.129
-pkgrel=1
+pkgrel=2
 pkgdesc="NCD scripting language, tun2socks proxifier, P2P VPN (mingw-w64)"
 arch=('any')
 url="https://github.com/ambrop72/badvpn"
@@ -16,20 +16,21 @@ depends=("${MINGW_PACKAGE_PREFIX}-nss"
          "${MINGW_PACKAGE_PREFIX}-glib2"
          "${MINGW_PACKAGE_PREFIX}-openssl"
          "${MINGW_PACKAGE_PREFIX}-nspr")
-source=("https://github.com/ambrop72/badvpn/archive/${pkgver}.tar.gz")
-md5sums=('e42f9c22fcef5a44498e80f23ceee0b3')
+source=("https://github.com/ambrop72/badvpn/archive/master.zip")
+md5sums=('SKIP')
 
 build() {
   mkdir -p "${srcdir}"/build-${CARCH}
   cd "${srcdir}"/build-${CARCH}
 
-  cmake ../${_realname}-${pkgver} \
+  cmake ../${_realname}-master \
     -G "MSYS Makefiles" \
     -DCMAKE_INSTALL_PREFIX="${pkgdir}${MINGW_PREFIX}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INCLUDE_PATH="${MINGW_PREFIX}"/include/nspr:"${MINGW_PREFIX}"/include/nss3 \
     -DBUILD_EXAMPLES=OFF \
-    -DBUILD_TESTS=OFF
+    -DBUILD_TESTS=OFF \
+    -DBUILD_SHARED_LIBS=ON
   make
 }
 
