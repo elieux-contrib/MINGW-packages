@@ -1,0 +1,43 @@
+# Maintainer: David Macek <david.macek.0@gmail.com>
+# Maintainer (Arch Linux): Thomas Dziedzic <gostrc@gmail.com>
+# Maintainer (Arch Linux): Vesa Kaihlavirta <vesa@archlinux.org>
+# Contributor (Arch Linux): Arch Haskell Team <arch-haskell@haskell.org>
+
+# TODO: enable docs
+
+_realname=cabal-install
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=1.22.2.0
+pkgrel=1
+pkgdesc="The command-line interface for Cabal and Hackage (mingw-w64)"
+url="http://hackage.haskell.org/package/cabal-install"
+license=('custom:BSD3')
+arch=('any')
+makedepends=("${MINGW_PACKAGE_PREFIX}-ghc")
+depends=("${MINGW_PACKAGE_PREFIX}-zlib"
+         "${MINGW_PACKAGE_PREFIX}-gmp")
+source=("http://hackage.haskell.org/packages/archive/${_realname}/${pkgver}/${_realname}-${pkgver}.tar.gz")
+md5sums=('bad431378bec8a0005fb1a3f5a92cd1b')
+
+build() {
+  local _opts=""
+  #_opts+=" --enable-shared" # currently not supported on Windows
+  _opts+=" --enable-library-profiling" # requires support from ghc
+
+  mkdir -p "${srcdir}/build-${CARCH}"
+  cd "${srcdir}/${_realname}-${pkgver}"
+
+  EXTRA_CONFIGURE_OPTS="${_opts}" \
+    ./bootstrap.sh \
+    --sandbox "${srcdir}/build-${CARCH}" \
+    --no-doc
+}
+
+package() {
+  cd "${srcdir}/build-${CARCH}"
+  install -D -m755 "bin/cabal.exe" "${pkgdir}${MINGW_PREFIX}/bin/cabal.exe"
+
+  cd "${srcdir}/${_realname}-${pkgver}"
+  install -D -m644 LICENSE "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+  install -D -m644 bash-completion/cabal "${pkgdir}${MINGW_PREFIX}/share/bash-completion/completions/cabal"
+}

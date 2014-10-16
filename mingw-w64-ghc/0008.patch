@@ -1,0 +1,11 @@
+--- ghc-7.10.1/compiler/main/SysTools.hs.orig	2015-03-21 23:30:07.000000000 +0100
++++ ghc-7.10.1/compiler/main/SysTools.hs	2015-03-29 01:31:40.715118100 +0100
+@@ -1407,7 +1407,7 @@
+                                          "ghc-stage3.exe"] ->
+                     case splitFileName $ takeDirectory d of
+                     -- ghc is in $topdir/bin/ghc.exe
+-                    (d', bin) | lower bin == "bin" -> takeDirectory d' </> "lib"
++                    (d', bin) | lower bin == "bin" -> takeDirectory d' </> "lib" </> "ghc"
+                     _ -> fail
+                 _ -> fail
+         where fail = panic ("can't decompose ghc.exe path: " ++ show s)

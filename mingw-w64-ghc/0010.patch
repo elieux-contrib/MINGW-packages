@@ -1,0 +1,15 @@
+--- ghc-7.10.1.orig/utils/mkdirhier/ghc.mk	2014-12-22 16:55:30.000000000 +0100
++++ ghc-7.10.1/utils/mkdirhier/ghc.mk	2015-03-29 11:45:03.819053100 +0200
+@@ -11,9 +11,9 @@
+ # -----------------------------------------------------------------------------
+ 
+ $(MKDIRHIER) : utils/mkdirhier/mkdirhier.sh
+-	-mkdir $(INPLACE)
+-	-mkdir $(INPLACE_BIN)
+-	-mkdir $(INPLACE_LIB)
++	mkdir -p $(INPLACE)
++	mkdir -p $(INPLACE_BIN)
++	mkdir -p $(INPLACE_LIB)
+ 	$(call removeFiles,$@)
+ 	echo '#!$(SHELL)'  		 >> $@
+ 	cat utils/mkdirhier/mkdirhier.sh >> $@

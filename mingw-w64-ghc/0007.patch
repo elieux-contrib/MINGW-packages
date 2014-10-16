@@ -1,0 +1,28 @@
+--- ghc-7.10.1/ghc.mk.orig	2015-03-29 01:14:52.263236500 +0100
++++ ghc-7.10.1/ghc.mk	2015-03-29 01:14:55.612757400 +0100
+@@ -911,9 +911,9 @@
+ 	                                  $p $(INSTALL_DISTDIR_$p)    \
+ 	                                  "$(STRIP_CMD)"              \
+ 	                                  '$(DESTDIR)'                \
+-	                                  '$(prefix)'                 \
+-	                                  '$(ghclibdir)'              \
+-	                                  '$(docdir)/html/libraries'  \
++	                                  '$(prefix:/%=%)'                 \
++	                                  '$(ghclibdir:/%=%)'              \
++	                                  '$(docdir:/%=%)/html/libraries'  \
+ 	                                  '$(GhcLibWays)'))
+ 	"$(INSTALLED_GHC_PKG_REAL)" --force --global-package-db "$(INSTALLED_PACKAGE_CONF)" update rts/dist/package.conf.install
+ 	$(foreach p, $(INSTALL_PACKAGES),                             \
+@@ -924,9 +924,9 @@
+ 	                                  "$(INSTALLED_GHC_PKG_REAL)" \
+ 	                                  "$(DESTDIR)$(topdir)"       \
+ 	                                  '$(DESTDIR)'                \
+-	                                  '$(prefix)'                 \
+-	                                  '$(ghclibdir)'              \
+-	                                  '$(docdir)/html/libraries'  \
++	                                  '$(prefix:/%=%)'                 \
++	                                  '$(ghclibdir:/%=%)'              \
++	                                  '$(docdir:/%=%)/html/libraries'  \
+ 	                                  $(RelocatableBuild)))
+ # when we install the packages above, ghc-pkg obeys umask when creating
+ # the package.conf files, but for everything else we specify the

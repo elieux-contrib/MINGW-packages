@@ -1,0 +1,20 @@
+--- ghc-7.10.0.orig/utils/ghc-cabal/Main.hs	2015-03-12 21:27:08.000000000 +0100
++++ ghc-7.10.0/utils/ghc-cabal/Main.hs	2015-03-28 13:21:29.876361600 +0100
+@@ -252,7 +252,7 @@
+     = idts {
+           prefix    = toPathTemplate $
+                           if relocatableBuild
+-                          then "$topdir"
++                          then "$topdir/../.."
+                           else myPrefix,
+           libdir    = toPathTemplate $
+                           if relocatableBuild
+@@ -261,7 +261,7 @@
+           libsubdir = toPathTemplate "$pkgkey",
+           docdir    = toPathTemplate $
+                           if relocatableBuild
+-                          then "$topdir/../doc/html/libraries/$pkgid"
++                          then "$topdir/../../share/doc/ghc/html/libraries/$pkgid"
+                           else (myDocdir </> "$pkgid"),
+           htmldir   = toPathTemplate "$docdir"
+       }

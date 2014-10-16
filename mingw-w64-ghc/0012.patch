@@ -1,0 +1,11 @@
+--- ghc-7.10.1/utils/haddock/haddock-api/src/Haddock.hs.orig	2015-03-29 12:08:00.265543800 +0200
++++ ghc-7.10.1/utils/haddock/haddock-api/src/Haddock.hs	2015-03-29 12:08:23.144579700 +0200
+@@ -493,7 +493,7 @@
+ getInTreeDir :: IO String
+ getInTreeDir = getExecDir >>= \case
+   Nothing -> error "No GhcDir found"
+-  Just d -> return (d </> ".." </> "lib")
++  Just d -> return (d </> ".." </> "lib" </> "ghc")
+ 
+ 
+ getExecDir :: IO (Maybe String)

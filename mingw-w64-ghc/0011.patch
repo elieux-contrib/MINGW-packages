@@ -1,0 +1,11 @@
+--- ghc-7.10.1/utils/hsc2hs/Main.hs.orig	2015-03-12 21:27:12.000000000 +0100
++++ ghc-7.10.1/utils/hsc2hs/Main.hs	2015-03-29 12:05:19.062745500 +0200
+@@ -204,7 +204,7 @@
+            die (name'++":"++show line++": "++msg++"\n")
+ 
+ getLibDir :: IO (Maybe String)
+-getLibDir = fmap (fmap (++ "/lib")) $ getExecDir "/bin/hsc2hs.exe"
++getLibDir = fmap (fmap (++ "/lib/ghc")) $ getExecDir "/bin/hsc2hs.exe"
+ 
+ -- (getExecDir cmd) returns the directory in which the current
+ --                  executable, which should be called 'cmd', is running

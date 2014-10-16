@@ -1,0 +1,11 @@
+--- ghc-7.10.1.orig/driver/haddock/ghc.mk	2014-12-22 16:55:30.000000000 +0100
++++ ghc-7.10.1/driver/haddock/ghc.mk	2015-03-29 14:36:27.416825900 +0200
+@@ -14,7 +14,7 @@
+ 
+ driver/haddock_dist_C_SRCS   = haddock.c ../utils/cwrapper.c ../utils/getLocation.c
+ driver/haddock_dist_CC_OPTS += -I driver/utils
+-driver/haddock_dist_PROGNAME = haddock-$(ProjectVersion)
++driver/haddock_dist_PROGNAME = haddock-$(ProjectVersion).exe
+ driver/haddock_dist_INSTALL  = YES
+ driver/haddock_dist_INSTALL_INPLACE = NO
+ 

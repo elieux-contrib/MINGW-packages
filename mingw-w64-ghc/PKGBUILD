@@ -1,0 +1,154 @@
+# Maintainer: David Macek <david.macek.0@gmail.com>
+# Maintainer (Arch Linux): Thomas Dziedzic <gostrc@gmail.com>
+# Maintainer (Arch Linux): Vesa Kaihlavirta <vesa@archlinux.org>
+
+# TODO: fix haddock
+# TODO: fix runhaskell (integer-gmp is missing symbol __mingw_vsnprintf)
+
+# Special note for devs looking to upgrade this package:
+#   ghc places a unique hash for each library when it is built.
+#   Libraries depend on versions specified by those hashes.
+#   This implies that all libraries need to be rebuilt when ghc is rebuilt.
+
+# use the following command to print out packages that need to get rebuilt
+# grep -r ghc /var/abs/ | awk -F '/' '{ print $5; }' | sort -u
+
+_realname=ghc
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=7.10.1
+pkgrel=1
+pkgdesc='The Glasgow Haskell Compiler (mingw-w64)'
+arch=('any')
+url='http://www.haskell.org/ghc/'
+license=('custom')
+install=ghc-${CARCH}.install
+depends=("${MINGW_PACKAGE_PREFIX}-perl"
+         "${MINGW_PACKAGE_PREFIX}-gmp"
+         "${MINGW_PACKAGE_PREFIX}-gcc"
+         "${MINGW_PACKAGE_PREFIX}-libffi")
+makedepends=("${MINGW_PACKAGE_PREFIX}-ghc"
+             "${MINGW_PACKAGE_PREFIX}-libxslt"
+             "${MINGW_PACKAGE_PREFIX}-docbook-xsl")
+checkdepends=("${MINGW_PACKAGE_PREFIX}-python2")
+options=('staticlibs')
+source=("http://www.haskell.org/${_realname}/dist/${pkgver}/${_realname}-${pkgver}-src.tar.xz"
+        "http://www.haskell.org/${_realname}/dist/${pkgver}/${_realname}-${pkgver}-testsuite.tar.xz"
+        '0001.patch'
+        '0002.patch'
+        '0003.patch'
+        '0004.patch'
+        '0005.patch'
+        '0006.patch'
+        '0007.patch'
+        '0008.patch'
+        '0009.patch'
+        '0010.patch'
+        '0011.patch'
+        '0012.patch'
+        '0013.patch'
+        '0014.patch'
+        '0015.patch'
+        '0016.patch')
+md5sums=('f93ad0cdc9df4b0f2d4421debdecb54f'
+         '41db579e247655236c2e35e66e645e71'
+         '9a267cc68aadd153f9fe06222932d1d3'
+         '46bd843245750e7302d6bf26e9d7d880'
+         'bced269d31f3680893226ed2dda4c271'
+         'bd032e6aa6ad3cd6649877c56b524da2'
+         '855192e72f68f766c2a2dbc0d1120c4b'
+         '61c1f34c9092008946cae86706aa6e1f'
+         '10b1da102d257fc67f63686967d7e1a9'
+         '60d174824307bb6bf6cf646cef82f2a6'
+         '103445567f53d9dce460750555aca2bb'
+         '5d8320fd5f89377fcdfa24606eebf9d4'
+         '766fb856b0ac29db4ada179dbafca30e'
+         '38c93f2411232fe614fb693a4d947a84'
+         '0d8b7711881707df6751c0f8fcf9c765'
+         '99af1b91ca08e9bf4e8f4ff37800d9e9'
+         '596b6f0238e6eef5db7b9b2afcf12f6f'
+         'b1cb1e1c5f1688d8232adfe835465ada')
+
+# 'quick' is quicker and eats less memory, but builds without profiling support
+_buildflavor=perf
+#_buildflavor=quick
+
+prepare() {
+  cd "${srcdir}"/${_realname}-${pkgver}
+
+  # TODO: patch refactoring & descriptions
+  patch -p1 -i "${srcdir}/0001.patch"
+  patch -p1 -i "${srcdir}/0002.patch"
+  patch -p1 -i "${srcdir}/0003.patch"
+  patch -p1 -i "${srcdir}/0004.patch"
+  patch -p1 -i "${srcdir}/0005.patch"
+  patch -p1 -i "${srcdir}/0006.patch"
+  patch -p1 -i "${srcdir}/0007.patch"
+  patch -p1 -i "${srcdir}/0008.patch"
+  patch -p1 -i "${srcdir}/0009.patch"
+  patch -p1 -i "${srcdir}/0010.patch"
+  patch -p1 -i "${srcdir}/0011.patch"
+  patch -p1 -i "${srcdir}/0012.patch"
+  patch -p1 -i "${srcdir}/0013.patch"
+  patch -p1 -i "${srcdir}/0014.patch"
+  patch -p1 -i "${srcdir}/0015.patch"
+  patch -p1 -i "${srcdir}/0016.patch"
+
+  cp mk/build.mk.sample mk/build.mk
+  sed "1i BuildFlavour = ${_buildflavor}" -i mk/build.mk
+  if check_option "debug" "y"; then
+      sed "1i GhcDebugged=YES" -i mk/build.mk
+  fi
+
+  autoreconf -fi
+}
+
+
+build() {
+  cd "${srcdir}"/${_realname}-${pkgver}
+
+  ./configure \
+    --prefix=${MINGW_PREFIX} \
+    --build=${MINGW_CHOST} \
+    --host=${MINGW_CHOST} \
+    --with-system-libffi \
+    --with-ffi-includes="$(pkg-config libffi --cflags-only-I | sed 's/^-I//')" \
+    --with-ffi-libraries="$(pkg-config libffi --libs-only-L | sed 's/^-L//')"
+
+  # don't use absolute paths
+  sed "s~\"${MINGW_PREFIX}/bin/~\"~" -i settings
+
+  # prevents unexpected failures
+  local MAKE_J=-j1
+
+  make ${MAKE_J}
+}
+
+check() {
+  cd "${srcdir}"/${_realname}-${pkgver}
+
+  # python2 rename
+  sed -e 's_#!/usr/bin/env python_&2_' -i testsuite/timeout/calibrate testsuite/timeout/timeout.py
+
+  # prevents unexpected failures
+  local MAKE_J=-j1
+
+  make ${MAKE_J} test
+
+  # enabling threads to speed up
+  # causes more failures than make test, need to investigate
+  #make ${MAKE_J} THREADS=9 test
+
+  # will most likely cause lots of failures
+  # enable this when upstream has 0 test failures from a simple 'make test'
+  # zero unexpected failures on all tier 1 platforms - http://hackage.haskell.org/trac/ghc/ticket/5757
+  #make ${MAKE_J} fulltest
+}
+
+package() {
+  cd "${srcdir}"/${_realname}-${pkgver}
+
+  make DESTDIR="${pkgdir}" install
+
+  install -D -m644 LICENSE "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
+  install -D -m644 utils/completion/ghc.bash "${pkgdir}"${MINGW_PREFIX}/share/bash-completion/completions/ghc
+}

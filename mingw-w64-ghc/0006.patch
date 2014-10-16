@@ -1,0 +1,56 @@
+--- ghc-7.10.1/configure.ac.orig	2015-03-28 17:18:49.730208800 +0100
++++ ghc-7.10.1/configure.ac	2015-03-28 18:20:00.492837400 +0100
+@@ -442,16 +442,25 @@
+ RANLIB="$RanlibCmd"
+ 
+ 
+-# Note: we may not have objdump on OS X, and we only need it on Windows (for DLL checks)
+-case $HostOS_CPP in
+-cygwin32|mingw32)
+-    dnl ** Which objdump to use?
+-    dnl --------------------------------------------------------------
+     FP_ARG_WITH_PATH_GNU_PROG([OBJDUMP], [objdump], [objdump])
+     ObjdumpCmd="$OBJDUMP"
+     AC_SUBST([ObjdumpCmd])
++
++    FP_ARG_WITH_PATH_GNU_PROG([STRIP], [strip], [strip])
++    StripCmd="$STRIP"
++    AC_SUBST([StripCmd])
++
++    FP_ARG_WITH_PATH_GNU_PROG([DLLWRAP], [dllwrap], [dllwrap])
++    DllwrapCmd="$DLLWRAP"
++    AC_SUBST([DllwrapCmd])
++
++    FP_ARG_WITH_PATH_GNU_PROG([DLLTOOL], [dlltool], [dlltool])
++    DlltoolCmd="$DLLTOOL"
++    AC_SUBST([DlltoolCmd])
++
++    FP_ARG_WITH_PATH_GNU_PROG([WINDRES], [windres], [windres])
++    WindresCmd="$WINDRES"
++    AC_SUBST([WindresCmd])
+-    ;;
+-esac
+ 
+ dnl ** Which LLVM llc to use?
+ dnl --------------------------------------------------------------
+@@ -542,11 +548,6 @@
+ AC_SYS_INTERPRETER()
+ 
+ dnl ** look for `perl'
+-case $HostOS_CPP in
+-cygwin32|mingw32)
+-    PerlCmd=$hardtop/inplace/perl/perl
+-    ;;
+-*)
+     AC_PATH_PROG(PerlCmd,perl)
+     if test -z "$PerlCmd"
+     then
+@@ -556,8 +557,6 @@
+     else
+         FPTOOLS_CHECK_PERL_VERSION
+     fi
+-    ;;
+-esac
+ 
+ dnl ** look for GCC and find out which version
+ dnl     Figure out which C compiler to use.  Gcc is preferred.

@@ -1,0 +1,12 @@
+--- ghc-7.10.1.orig/rts/package.conf.in	2014-12-22 16:55:30.000000000 +0100
++++ ghc-7.10.1/rts/package.conf.in	2015-03-29 15:54:45.675835300 +0200
+@@ -49,9 +49,7 @@
+                               ,"bfd", "iberty"  /* for debugging */
+ #endif
+ #ifdef HAVE_LIBMINGWEX
+-# ifndef INSTALLING                             /* Bundled Mingw is behind */
+                               ,"mingwex"
+-# endif
+ #endif
+ #if USE_PAPI
+                              , "papi"

@@ -1,0 +1,38 @@
+--- ghc-7.10.0.orig/mk/install.mk.in	2014-12-22 16:55:30.000000000 +0100
++++ ghc-7.10.0/mk/install.mk.in	2015-03-28 13:18:15.721513600 +0100
+@@ -83,18 +83,18 @@
+ 
+ # Hack: our directory layouts tend to be different on Windows, so
+ # hack around configure's bogus assumptions here.
+-datarootdir = $(prefix)
+-datadir     = $(prefix)/lib
++datarootdir = $(prefix)/share
++datadir     = $(datarootdir)
+ libdir      = $(prefix)/lib
+ 
+-docdir    = $(prefix)/doc
++docdir    = $(datarootdir)/doc/ghc
+ htmldir   = $(docdir)
+ dvidir    = $(docdir)
+ pdfdir    = $(docdir)
+ psdir     = $(docdir)
+ 
+-ghclibdir = $(libdir)
+-ghcdocdir = $(datarootdir)/doc
++ghclibdir = $(libdir)/ghc
++ghcdocdir = $(datarootdir)/doc/ghc
+ 
+ else
+ 
+@@ -164,8 +164,11 @@
+ #    because of all those shell invocations.)
+ ifeq "$(OSTYPE)" "cygwin"
+ MK_INSTALL_DEST = $$(cygpath $1)
+ else
++ifeq "$(OSTYPE)" "msys"
++MK_INSTALL_DEST = $$(cygpath $1)
++endif
+ MK_INSTALL_DEST = $1
+ endif
+ 
+ #

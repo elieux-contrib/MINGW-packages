@@ -1,0 +1,64 @@
+diff -aur ghc-7.10.1.orig/ghc.mk ghc-7.10.1/ghc.mk
+--- ghc-7.10.1.orig/ghc.mk	2015-03-29 01:45:10.274092700 +0100
++++ ghc-7.10.1/ghc.mk	2015-03-29 01:59:51.024402200 +0100
+@@ -192,7 +192,7 @@
+ # -----------------------------------------------------------------------------
+ # The inplace tree
+ 
+-$(eval $(call clean-target,root,inplace,inplace/bin inplace/lib))
++$(eval $(call clean-target,root,inplace,inplace/bin inplace/lib/ghc))
+ 
+ # -----------------------------------------------------------------------------
+ # Whether to build dependencies or not
+@@ -1243,7 +1243,7 @@
+ # this is here since CLEAN_FILES can't handle folders
+ 	$(call removeTrees,includes/dist-derivedconstants)
+ 	$(call removeTrees,inplace/bin)
+-	$(call removeTrees,inplace/lib)
++	$(call removeTrees,inplace/lib/ghc)
+ 	$(call removeTrees,libraries/bootstrapping.conf)
+ 
+ .PHONY: clean_libraries
+diff -aur ghc-7.10.1.orig/mk/tree.mk ghc-7.10.1/mk/tree.mk
+--- ghc-7.10.1.orig/mk/tree.mk	2015-03-29 01:45:10.173226800 +0100
++++ ghc-7.10.1/mk/tree.mk	2015-03-29 01:58:41.874795300 +0100
+@@ -16,8 +16,8 @@
+ 
+ INPLACE                 = inplace
+ INPLACE_BIN             = $(INPLACE)/bin
+-INPLACE_LIB             = $(INPLACE)/lib
+-INPLACE_TOPDIR          = $(INPLACE)/lib
++INPLACE_LIB             = $(INPLACE)/lib/ghc
++INPLACE_TOPDIR          = $(INPLACE)/lib/ghc
+ 
+ ################################################################################
+ #
+diff -aur ghc-7.10.1.orig/rules/tags-package.mk ghc-7.10.1/rules/tags-package.mk
+--- ghc-7.10.1.orig/rules/tags-package.mk	2014-12-22 16:55:30.000000000 +0100
++++ ghc-7.10.1/rules/tags-package.mk	2015-03-29 01:58:31.585945400 +0100
+@@ -25,11 +25,11 @@
+ 
+ .PHONY: tags_$1
+ tags_$1:
+-	inplace/bin/ghctags --topdir $$(TOP)/inplace/lib -c --use-cabal-config $1/$2 -- $$($1_$2_TAGS_HC_OPTS) $$($1_$2_v_ALL_HC_OPTS) -- $$($1_$2_HS_SRCS)
++	inplace/bin/ghctags --topdir $$(TOP)/inplace/lib/ghc -c --use-cabal-config $1/$2 -- $$($1_$2_TAGS_HC_OPTS) $$($1_$2_v_ALL_HC_OPTS) -- $$($1_$2_HS_SRCS)
+ 
+ .PHONY: TAGS_$1
+ TAGS_$1:
+-	inplace/bin/ghctags --topdir $$(TOP)/inplace/lib -e --use-cabal-config $1/$2 -- $$($1_$2_TAGS_HC_OPTS) $$($1_$2_v_ALL_HC_OPTS) -- $$($1_$2_HS_SRCS)
++	inplace/bin/ghctags --topdir $$(TOP)/inplace/lib/ghc -e --use-cabal-config $1/$2 -- $$($1_$2_TAGS_HC_OPTS) $$($1_$2_v_ALL_HC_OPTS) -- $$($1_$2_HS_SRCS)
+ 
+ $(call profEnd, tags-package($1,$2))
+ endef
+diff -aur ghc-7.10.1.orig/utils/count_lines/count_lines.lprl ghc-7.10.1/utils/count_lines/count_lines.lprl
+--- ghc-7.10.1.orig/utils/count_lines/count_lines.lprl	2014-12-22 16:55:30.000000000 +0100
++++ ghc-7.10.1/utils/count_lines/count_lines.lprl	2015-03-29 01:58:11.415931100 +0100
+@@ -14,7 +14,7 @@
+ foreach $f ( @ARGV ) {
+ 
+     if ( $f =~ /\.lhs$/ ) {
+-        open(INF, "$binPath/../../inplace/lib/unlit $f - |") || die "Couldn't unlit $f!\n";
++        open(INF, "$binPath/../../inplace/lib/ghc/unlit $f - |") || die "Couldn't unlit $f!\n";
+     } else {
+         open(INF, "< $f") || die "Couldn't open $f!\n";
+     }

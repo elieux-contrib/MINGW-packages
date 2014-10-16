@@ -1,0 +1,105 @@
+--- ghc-7.10.0.orig/ghc/ghc.mk	2014-12-22 16:55:30.000000000 +0100
++++ ghc-7.10.0/ghc/ghc.mk	2015-03-22 14:35:31.311439000 +0100
+@@ -155,12 +155,6 @@
+ $(GHC_STAGE3) : | $$(ghc-split_INPLACE)
+ endif
+ 
+-ifeq "$(Windows_Host)" "YES"
+-$(GHC_STAGE1) : | $$(touchy_INPLACE)
+-$(GHC_STAGE2) : | $$(touchy_INPLACE)
+-$(GHC_STAGE3) : | $$(touchy_INPLACE)
+-endif
+-
+ # Modules like vector:Data.Vector.Fusion.Stream.Monadic use annotations,
+ # which means they depend on GHC.Desugar. To ensure that This module is
+ # available by the time it is needed, we make the stage 2 compiler
+--- ghc-7.10.0.orig/ghc.mk	2014-12-22 16:55:30.000000000 +0100
++++ ghc-7.10.0/ghc.mk	2015-03-22 14:35:31.311439000 +0100
+@@ -779,23 +779,6 @@
+ INSTALL_LIBRARY_DOCS += libraries/dist-haddock/*
+ endif
+ 
+-# -----------------------------------------------------------------------------
+-# Creating a local mingw copy on Windows
+-
+-ifeq "$(Windows_Host)" "YES"
+-
+-install : install_mingw
+-.PHONY: install_mingw
+-install_mingw : $(INPLACE_MINGW)
+-	"$(CP)" -Rp $(INPLACE_MINGW) $(prefix)
+-
+-install : install_perl
+-.PHONY: install_perl
+-install_perl : $(INPLACE_PERL)
+-	"$(CP)" -Rp $(INPLACE_PERL) $(prefix)
+-
+-endif # Windows_Host
+-
+ ifneq "$(BINDIST)" "YES"
+ $(ghc-prim-$(libraries/ghc-prim_dist-install_VERSION)_HADDOCK_FILE): \
+     libraries/ghc-prim/dist-install/build/autogen/GHC/Prim.hs
+--- ghc-7.10.0.orig/mk/config.mk.in	2015-02-23 10:55:27.000000000 +0100
++++ ghc-7.10.0/mk/config.mk.in	2015-03-22 14:28:00.141158200 +0100
+@@ -581,21 +581,13 @@
+ SRC_HSC2HS_OPTS_STAGE1 += --cflag=-D$(TargetArch_CPP)_HOST_ARCH=1 --cflag=-D$(TargetOS_CPP)_HOST_OS=1
+ SRC_HSC2HS_OPTS_STAGE2 += --cflag=-D$(TargetArch_CPP)_HOST_ARCH=1 --cflag=-D$(TargetOS_CPP)_HOST_OS=1
+ 
+-ifeq "$(TARGETPLATFORM)" "i386-unknown-mingw32"
+-WINDRES = $(INPLACE_MINGW)/bin/windres
+-else ifeq "$(TARGETPLATFORM)" "x86_64-unknown-mingw32"
+-WINDRES = $(INPLACE_MINGW)/bin/windres
+-endif
++WINDRES = @WindresCmd@
+ 
+ #-----------------------------------------------------------------------------
+ # Mingwex Library
+ #
+ HaveLibMingwEx	= @HaveLibMingwEx@
+-ifeq "$(TARGETPLATFORM)" "i386-unknown-mingw32"
+-DLLTOOL			= inplace/mingw/bin/dlltool.exe
+-else ifeq "$(TARGETPLATFORM)" "x86_64-unknown-mingw32"
+-DLLTOOL			= inplace/mingw/bin/dlltool.exe
+-endif
++DLLTOOL = @DlltoolCmd@
+ 
+ #-----------------------------------------------------------------------------
+ # Other standard (ha!) Unix utilities
+@@ -690,11 +679,7 @@
+ XARGS_OPTS = -s 20000
+ endif
+ 
+-ifeq "$(TARGETPLATFORM)" "x86_64-unknown-mingw32"
+-STRIP_CMD      = $(TOP)/inplace/mingw/bin/strip.exe
+-else
+-STRIP_CMD      = strip
+-endif
++STRIP_CMD      = @StripCmd@
+ PATCH_CMD      = @PatchCmd@
+ TAR_CMD        = @TarCmd@
+ BZIP2_CMD      = bzip2
+@@ -718,13 +703,8 @@
+ $(error $$(TAR_COMP) set to unknown value "$(TAR_COMP)" (supported: "bzip2", "gzip", "xz"))
+ endif
+ 
+-ifeq "$(Windows_Host)" "YES"
+-TOUCH_CMD      = $(utils/touchy_dist_INPLACE)
+-TOUCH_DEP      = $(TOUCH_CMD)
+-else
+ TOUCH_CMD      = touch
+ TOUCH_DEP      =
+-endif
+ 
+ HSCOLOUR_CMD   = @HSCOLOUR@
+ 
+--- ghc-7.10.0.orig/mk/tree.mk	2014-12-22 16:55:30.000000000 +0100
++++ ghc-7.10.0/mk/tree.mk	2015-03-22 14:26:40.896896400 +0100
+@@ -18,8 +18,6 @@
+ INPLACE_BIN             = $(INPLACE)/bin
+ INPLACE_LIB             = $(INPLACE)/lib
+ INPLACE_TOPDIR          = $(INPLACE)/lib
+-INPLACE_MINGW           = $(INPLACE)/mingw
+-INPLACE_PERL            = $(INPLACE)/perl
+ 
+ ################################################################################
+ #

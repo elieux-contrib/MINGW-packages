@@ -1,0 +1,11 @@
+--- ghc-7.10.1/utils/ghc-pkg/Main.hs.orig	2015-03-21 23:30:07.000000000 +0100
++++ ghc-7.10.1/utils/ghc-pkg/Main.hs	2015-03-29 12:24:28.512903200 +0200
+@@ -1896,7 +1896,7 @@
+ unDosifyPath xs = subst '\\' '/' xs
+ 
+ getLibDir :: IO (Maybe String)
+-getLibDir = fmap (fmap (</> "lib")) $ getExecDir "/bin/ghc-pkg.exe"
++getLibDir = fmap (fmap (</> "lib" </> "ghc")) $ getExecDir "/bin/ghc-pkg.exe"
+ 
+ -- (getExecDir cmd) returns the directory in which the current
+ --                  executable, which should be called 'cmd', is running

@@ -1,0 +1,11 @@
+--- ghc-7.10.1.orig/driver/ghc/ghc.mk	2014-12-22 16:55:30.000000000 +0100
++++ ghc-7.10.1/driver/ghc/ghc.mk	2015-03-29 14:31:53.978075000 +0200
+@@ -14,7 +14,7 @@
+ 
+ driver/ghc_dist_C_SRCS   = ghc.c ../utils/cwrapper.c ../utils/getLocation.c
+ driver/ghc_dist_CC_OPTS += -I driver/utils
+-driver/ghc_dist_PROGNAME = ghc-$(ProjectVersion)
++driver/ghc_dist_PROGNAME = ghc-$(ProjectVersion).exe
+ driver/ghc_dist_INSTALL  = YES
+ driver/ghc_dist_INSTALL_INPLACE = NO
+ 
