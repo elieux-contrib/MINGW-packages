@@ -1,0 +1,40 @@
+# Maintainer: David Macek <david.macek.0@gmail.com>
+
+_realname=mysql
+
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=5.6.21
+pkgrel=1
+pkgdesc="The world's most popular open source database (mingw-w64)"
+url='http://dev.mysql.com/community/'
+license=('LGPL')
+arch=('any')
+depends=()
+makedepends=()
+source=("http://dev.mysql.com/get/Downloads/MySQL-5.6/${_realname}-${pkgver}.tar.gz")
+md5sums=('e47c3a70b8d89db3199a349204b2ae4e')
+
+build() {
+  mkdir -p "${srcdir}"/build-${CARCH}
+  cd "${srcdir}"/build-${CARCH}
+
+  cmake \
+    -G "MSYS Makefiles" \
+    -DCMAKE_INSTALL_PREFIX:PATH=${PREFIX_WIN} \
+    -DCMAKE_BUILD_TYPE=RELEASE \
+    -DWITH_EXTERNAL_ZLIB=ON \
+    -DWITH_SQLITE=OFF \
+    -DWITH_OPENSSL=ON \
+    ../${_realname}-${pkgver}
+  make
+}
+
+check() {
+  cd "${srcdir}"/build-${CARCH}
+  make check
+}
+
+package() {
+  cd "${srcdir}"/build-${CARCH}
+  make DESTDIR="${pkgdir}" install
+}
