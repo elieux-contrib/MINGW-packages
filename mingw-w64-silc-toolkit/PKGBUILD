@@ -1,0 +1,48 @@
+# Maintainer: Renato Silva <br.renatosilva@gmail.com>
+
+_name=silc-toolkit
+url="http://http://silcnet.org"
+pkgdesc="Secure Internet Live Conferencing (mingw-w64)"
+license=(GPL2)
+arch=(i686 x86_64)
+pkgver=1.1.12
+pkgrel=1
+
+pkgname=(${MINGW_PACKAGE_PREFIX}-${_name})
+depends=(${MINGW_PACKAGE_PREFIX}-libgnurx)
+makedepends=(${MINGW_PACKAGE_PREFIX}-gcc)
+
+source=("https://downloads.sourceforge.net/project/silc/silc/toolkit/sources/silc-toolkit-${pkgver}.tar.gz"
+        001-remove-outdated-mno-cygwin-gcc-option.patch
+        002-fixes-for-64-bit.patch
+        003-fix-references-to-slash-usr.patch
+        004-more-fixes-from-opensuse.patch)
+
+md5sums=(321536224d4dee2423a3fd05af651eff
+         f726a755bdd53473cbf8721e7f948714
+         9df1cb6241c269a194cb4ef6b2bc0504
+         2bf45e2323f154aa8b56c4465e83f144
+         56e37c64eead3ca335664ac371800485)
+
+prepare() {
+    cd "$srcdir/${_name}-${pkgver}"
+    patch -p1 < "${startdir}"/001-remove-outdated-mno-cygwin-gcc-option.patch
+    patch -p1 < "${startdir}"/002-fixes-for-64-bit.patch
+    patch -p1 < "${startdir}"/003-fix-references-to-slash-usr.patch
+    patch -p1 < "${startdir}"/004-more-fixes-from-opensuse.patch
+    autoreconf -sif
+}
+
+build() {
+    cd "$srcdir/${_name}-${pkgver}"
+    ./configure --prefix=${MINGW_PREFIX} --with-win32 #--enable-ipv6
+    make
+}
+
+package() {
+    cd "$srcdir/${_name}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+    cd "${pkgdir}${MINGW_PREFIX}/share"
+    mkdir -p licenses/${_name}
+    mv -v doc/${_name}/COPYING licenses/${_name}/COPYING
+}

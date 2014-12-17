@@ -1,0 +1,28 @@
+diff -aur 003/includes/silcwin32.h 004/includes/silcwin32.h
+--- 003/includes/silcwin32.h	2014-12-17 16:55:41.595703100 -0200
++++ 004/includes/silcwin32.h	2014-12-17 17:46:48.268554600 -0200
+@@ -71,7 +71,7 @@
+ #undef sleep
+ #define sleep(x) Sleep((x) * 1000)
+ 
+-#if _MSC_VER < 1300
++#if (defined(_MSC_VER) && (_MSC_VER < 1300))
+ #define SetWindowLongPtr SetWindowLong
+ #define GetWindowLongPtr GetWindowLong
+ #endif /* _MSC_VER < 1300 */
+diff -aur 003/lib/Makefile.am 004/lib/Makefile.am
+--- 003/lib/Makefile.am	2014-12-17 16:55:40.332031200 -0200
++++ 004/lib/Makefile.am	2014-12-17 17:48:30.896484300 -0200
+@@ -44,9 +44,9 @@
+ endif
+ 
+ if SILC_WIN32
+-SILC_LINK_LIBS=$(LIBS)
+-SILCCLIENT_LINK_LIBS=$(LIBS) -lsilc
+-SILCSERVER_LIBS=$(LIBS) -lsilc
++SILC_LINK_LIBS=$(LIBS) -lregex
++SILCCLIENT_LINK_LIBS=$(LIBS) -lsilc -lregex
++SILCSERVER_LIBS=$(LIBS) -lsilc -lregex
+ else
+ SILC_LINK_LIBS=$(LIBS)
+ SILCCLIENT_LINK_LIBS=libsilc.la
