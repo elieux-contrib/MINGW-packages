@@ -16,13 +16,15 @@ source=("https://downloads.sourceforge.net/project/silc/silc/toolkit/sources/sil
         001-remove-outdated-mno-cygwin-gcc-option.patch
         002-fixes-for-64-bit.patch
         003-fix-references-to-slash-usr.patch
-        004-more-fixes-from-opensuse.patch)
+        004-more-fixes-from-opensuse.patch
+        005-use-def-files-for-dll-exports.patch)
 
 md5sums=(321536224d4dee2423a3fd05af651eff
          f726a755bdd53473cbf8721e7f948714
          9df1cb6241c269a194cb4ef6b2bc0504
          2bf45e2323f154aa8b56c4465e83f144
-         56e37c64eead3ca335664ac371800485)
+         56e37c64eead3ca335664ac371800485
+         b0061555d98ed704ae1c4c0156e638a5)
 
 prepare() {
     cd "$srcdir/${_name}-${pkgver}"
@@ -30,6 +32,7 @@ prepare() {
     patch -p1 < "${startdir}"/002-fixes-for-64-bit.patch
     patch -p1 < "${startdir}"/003-fix-references-to-slash-usr.patch
     patch -p1 < "${startdir}"/004-more-fixes-from-opensuse.patch
+    patch -p1 < "${startdir}"/005-use-def-files-for-dll-exports.patch
     autoreconf -sif
 }
 
