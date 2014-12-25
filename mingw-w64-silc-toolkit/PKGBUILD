@@ -24,7 +24,7 @@ md5sums=(321536224d4dee2423a3fd05af651eff
          9df1cb6241c269a194cb4ef6b2bc0504
          2bf45e2323f154aa8b56c4465e83f144
          56e37c64eead3ca335664ac371800485
-         b0061555d98ed704ae1c4c0156e638a5)
+         4516e0f021de587db87bfa1b71618713)
 
 prepare() {
     cd "$srcdir/${_name}-${pkgver}"
