@@ -1,0 +1,54 @@
+From 7dce9d779ec7fb5737f0c3d1bf0b99076fd0ef4f Mon Sep 17 00:00:00 2001
+From: David Macek <david.macek.0@gmail.com>
+Date: Thu, 19 Feb 2015 18:22:23 +0100
+Subject: [PATCH] Fixes
+
+---
+ gui.cpp     | 2 +-
+ nssm.h      | 4 +++-
+ service.cpp | 2 +-
+ 3 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/gui.cpp b/gui.cpp
+index 692fb9b..ab54df2 100644
+--- a/gui.cpp
++++ b/gui.cpp
+@@ -1,6 +1,6 @@
+ #include "nssm.h"
+ 
+-static enum { NSSM_TAB_APPLICATION, NSSM_TAB_DETAILS, NSSM_TAB_LOGON, NSSM_TAB_DEPENDENCIES, NSSM_TAB_PROCESS, NSSM_TAB_SHUTDOWN, NSSM_TAB_EXIT, NSSM_TAB_IO, NSSM_TAB_ROTATION, NSSM_TAB_ENVIRONMENT, NSSM_NUM_TABS };
++enum { NSSM_TAB_APPLICATION, NSSM_TAB_DETAILS, NSSM_TAB_LOGON, NSSM_TAB_DEPENDENCIES, NSSM_TAB_PROCESS, NSSM_TAB_SHUTDOWN, NSSM_TAB_EXIT, NSSM_TAB_IO, NSSM_TAB_ROTATION, NSSM_TAB_ENVIRONMENT, NSSM_NUM_TABS };
+ static HWND tablist[NSSM_NUM_TABS];
+ static int selected_tab;
+ 
+diff --git a/nssm.h b/nssm.h
+index f34346b..ed9c2bd 100644
+--- a/nssm.h
++++ b/nssm.h
+@@ -32,7 +32,9 @@
+ #endif
+ #define DIR_LENGTH PATH_LENGTH - 12
+ 
+-#define _WIN32_WINNT 0x0500
++typedef long long int _int64;
++
++#define _WIN32_WINNT 0x0600
+ #include <fcntl.h>
+ #include <io.h>
+ #include <shlwapi.h>
+diff --git a/service.cpp b/service.cpp
+index 61d4b84..0e546d6 100644
+--- a/service.cpp
++++ b/service.cpp
+@@ -206,7 +206,7 @@ int affinity_string_to_mask(TCHAR *string, __int64 *mask) {
+   }
+ 
+   for (i = 0; i <= n; i++) {
+-    for (int j = set[i].first; j <= set[i].last; j++) (__int64) *mask |= (1LL << (__int64) j);
++    for (int j = set[i].first; j <= set[i].last; j++)  *(__int64*)mask |= (1LL << (__int64) j);
+   }
+ 
+   return 0;
+-- 
+2.3.0
+
