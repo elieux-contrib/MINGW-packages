@@ -1,0 +1,39 @@
+Index: makefile_gcc
+===================================================================
+diff --git a/plugins/luamacro/makefile_gcc b/plugins/luamacro/makefile_gcc
+--- a/plugins/luamacro/makefile_gcc	(revision 13019)
++++ b/plugins/luamacro/makefile_gcc	(working copy)
+@@ -16,8 +16,8 @@
+ USERCPP = -Iluasdk/include -DEXPORT_OPEN -DEXPORT_EXITFAR -DEXPORT_CONFIGURE \
+           -DEXPORT_PROCESSEDITOREVENT -DEXPORT_PROCESSVIEWEREVENT \
+           -DEXPORT_PROCESSDIALOGEVENT -DEXPORT_PROCESSEDITORINPUT
+-USERLIBS = $(LUALIB) luasdk/$(DIRBIT)/lua$(LUAVER).dll
+-
++USERLIBS = $(LUALIB)
++
+ NEEDENTRY  = 1
+ NEEDDEFLIB = 1
+ EXCLUDECRT = 1
+Index: makefile_lib_gcc
+===================================================================
+diff --git a/plugins/luamacro/makefile_lib_gcc b/plugins/luamacro/makefile_lib_gcc
+--- a/plugins/luamacro/makefile_lib_gcc	(revision 13019)
++++ b/plugins/luamacro/makefile_lib_gcc	(working copy)
+@@ -5,8 +5,6 @@
+ LUA_PROXY=lua5.1.dll
+ LUA=$(WINE_CMD)$(strip $(call os_name, luasdk/32/lua.exe))
+ 
+-DOCS = luasdk/$(DIRBIT)/lua$(LUAVER).dll luasdk/$(DIRBIT)/$(LUA_PROXY) \
+-       luasdk/$(DIRBIT)/lpeg.dll
+ SRCS = \
+ luafar/bit64.c \
+ luafar/exported.c \
+@@ -29,7 +27,7 @@
+ SRCS += luafar/compat52.c
+ endif
+ 
+-USERLIBS = luasdk/$(DIRBIT)/lua$(LUAVER).dll -lrpcrt4
++USERLIBS = -llua -lrpcrt4
+ USERCPP  = -Iluasdk/include -DBUILD_DLL -DWINVER=0x500 -DLUADLL=\"lua$(LUAVER).dll\"
+ 
+ NEEDENTRY  = 1

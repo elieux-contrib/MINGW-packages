@@ -1,0 +1,20 @@
+--- a/misc/lng/lng.inserter.cpp	2015-03-11 21:47:06.470656800 +0100
++++ b/misc/lng/lng.inserter.cpp	2015-03-12 17:32:07.820550200 +0100
+@@ -14,7 +14,7 @@
+ 
+ 	const std::wstring InFeedName = argv[1], OutFeedName = argv[2], LngName = argv[3];
+ 	
+-	std::wifstream Feed(InFeedName), Lng(LngName);
++	std::wifstream Feed(ansi(InFeedName.begin(), InFeedName.end())), Lng(ansi(LngName.begin(), LngName.end()));
+ 
+ 	std::wcout << L"Reading " << LngName << std::endl;
+ 
+@@ -164,7 +164,7 @@
+ 
+ 	std::wcout << L"Writing to " << OutFeedName << std::endl;
+ 
+-	std::wofstream oFeed(OutFeedName);
++	std::wofstream oFeed(ansi(OutFeedName.begin(), OutFeedName.end()));
+ 
+ 	for(auto i = FeedLines.begin(); i != FeedLines.end(); ++i)
+ 	{

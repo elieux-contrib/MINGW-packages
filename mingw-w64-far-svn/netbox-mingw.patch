@@ -1,0 +1,397 @@
+From a7658183f8ea8873723a435f65aeef3b61fa0cf1 Mon Sep 17 00:00:00 2001
+From: David Macek <david.macek.0@gmail.com>
+Date: Fri, 13 Mar 2015 14:21:15 +0100
+Subject: [PATCH] mingw
+
+---
+ src/PluginSDK/Far3/plugin.hpp |   2 +
+ src/base/nbglobals.h          |   4 +
+ src/base/rtti.hpp             | 196 +++++++++++++++++++++---------------------
+ src/core/Common.cpp           |  15 ----
+ src/core/Common.h             |   2 +
+ src/core/FtpFileSystem.cpp    |   2 +-
+ src/core/SessionData.cpp      |   2 +-
+ src/core/SessionInfo.cpp      |   2 +-
+ src/core/SftpFileSystem.cpp   |   6 +-
+ src/core/Terminal.cpp         |   4 +-
+ 10 files changed, 113 insertions(+), 122 deletions(-)
+
+diff --git a/src/PluginSDK/Far3/plugin.hpp b/src/PluginSDK/Far3/plugin.hpp
+index df2e61b..82d9244 100644
+--- a/src/PluginSDK/Far3/plugin.hpp
++++ b/src/PluginSDK/Far3/plugin.hpp
+@@ -1159,6 +1159,7 @@ struct WindowType
+ 	int Type;
+ };
+ 
++#if !defined(__MINGW32__)
+ enum PROGRESSTATE
+ {
+ 	PS_NOPROGRESS   =0x0,
+@@ -1167,6 +1168,7 @@ enum PROGRESSTATE
+ 	PS_ERROR        =0x4,
+ 	PS_PAUSED       =0x8,
+ };
++#endif
+ 
+ struct ProgressValue
+ {
+diff --git a/src/base/nbglobals.h b/src/base/nbglobals.h
+index c09d42b..3632c86 100644
+--- a/src/base/nbglobals.h
++++ b/src/base/nbglobals.h
+@@ -1,5 +1,9 @@
+ #pragma once
+ 
++#if defined(__cplusplus)
++#include <new>
++#endif
++
+ #ifdef USE_DLMALLOC
+ #include "../../libs/dlmalloc/malloc-2.8.6.h"
+ 
+diff --git a/src/base/rtti.hpp b/src/base/rtti.hpp
+index ecfa142..8772f8c 100644
+--- a/src/base/rtti.hpp
++++ b/src/base/rtti.hpp
+@@ -6,105 +6,6 @@
+ 
+ class TObject;
+ class THashTable;
+-enum TObjectClassId;
+-
+-class TClassInfo
+-{
+-CUSTOM_MEM_ALLOCATION_IMPL
+-public:
+-  TClassInfo(int classId,
+-             const TClassInfo * baseInfo1,
+-             const TClassInfo * baseInfo2);
+-  ~TClassInfo();
+-
+-  int GetClassId() const { return m_classId; }
+-  int GetBaseClassId1() const
+-  { return m_baseInfo1 ? m_baseInfo1->GetClassId() : 0; }
+-  int GetBaseClassId2() const
+-  { return m_baseInfo2 ? m_baseInfo2->GetClassId() : 0; }
+-  const TClassInfo * GetBaseClassInfo1() const { return m_baseInfo1; }
+-  const TClassInfo * GetBaseClassInfo2() const { return m_baseInfo2; }
+-
+-  static const TClassInfo * GetFirst() { return sm_first; }
+-  const TClassInfo * GetNext() const { return m_next; }
+-  static const TClassInfo * FindClass(int classId);
+-
+-  // Climb upwards through inheritance hierarchy.
+-  bool IsKindOf(const TClassInfo * info) const;
+-
+-private:
+-  int m_classId;
+-
+-  const TClassInfo * m_baseInfo1;
+-  const TClassInfo * m_baseInfo2;
+-
+-  // class info object live in a linked list:
+-  // pointers to its head and the next element in it
+-  static TClassInfo * sm_first;
+-  TClassInfo * m_next;
+-
+-  static THashTable * sm_classTable;
+-
+-protected:
+-  // registers the class
+-  void Register();
+-  void Unregister();
+-
+-private:
+-  TClassInfo(const TClassInfo &);
+-  TClassInfo & operator=(const TClassInfo &);
+-};
+-
+-#define NB_DECLARE_RUNTIME_CLASS(name)        \
+-public:                                       \
+-  static TClassInfo FClassInfo;               \
+-  virtual TClassInfo * GetClassInfo() const;
+-
+-#define NB_DECLARE_CLASS(name)          \
+-  NB_DECLARE_RUNTIME_CLASS(name)        \
+-
+-#define NB_GET_CLASS_INFO(name)         \
+-  &name::FClassInfo
+-
+-#define NB_IMPLEMENT_CLASS(name, baseclassinfo1, baseclassinfo2) \
+-  TClassInfo name::FClassInfo(OBJECT_CLASS_##name,    \
+-    baseclassinfo1,                                   \
+-    baseclassinfo2);                                  \
+-  TClassInfo * name::GetClassInfo() const             \
+-  { return &name::FClassInfo; }
+-
+-const TObject * NbStaticDownCastConst(TObjectClassId ClassId, const TObject * Object);
+-TObject * NbStaticDownCast(TObjectClassId ClassId, TObject * Object);
+-
+-#define NB_STATIC_DOWNCAST_CONST(class_name, object) (static_cast<const class_name *>(NbStaticDownCastConst(OBJECT_CLASS_##class_name, static_cast<const TObject *>(object))))
+-#define NB_STATIC_DOWNCAST(class_name, object) (static_cast<class_name *>(NbStaticDownCast(OBJECT_CLASS_##class_name, static_cast<TObject *>(object))))
+-
+-class THashTable : public rde::hash_map<int, const TClassInfo *>
+-{
+-CUSTOM_MEM_ALLOCATION_IMPL
+-typedef rde::hash_map<int, const TClassInfo *> ancestor;
+-public:
+-  ancestor::mapped_type Get(const ancestor::key_type & key) const
+-  {
+-    ancestor::const_iterator it = ancestor::find(key);
+-    if (it != ancestor::end())
+-      return it->second;
+-    else
+-      return nullptr;
+-  }
+-  void Put(const ancestor::key_type & key, ancestor::mapped_type value)
+-  {
+-    ancestor::insert(ancestor::value_type(key, value));
+-  }
+-  void Delete(const ancestor::key_type & key)
+-  {
+-    ancestor::iterator it = ancestor::find(key);
+-    if (it != ancestor::end())
+-      ancestor::erase(it);
+-  }
+-  size_t GetCount() const { return ancestor::size(); }
+-};
+-
+ enum TObjectClassId
+ {
+   OBJECT_CLASS_TObject = 1,
+@@ -268,3 +169,100 @@ enum TObjectClassId
+   OBJECT_CLASS_TFarText,
+ };
+ 
++class TClassInfo
++{
++CUSTOM_MEM_ALLOCATION_IMPL
++public:
++  TClassInfo(int classId,
++             const TClassInfo * baseInfo1,
++             const TClassInfo * baseInfo2);
++  ~TClassInfo();
++
++  int GetClassId() const { return m_classId; }
++  int GetBaseClassId1() const
++  { return m_baseInfo1 ? m_baseInfo1->GetClassId() : 0; }
++  int GetBaseClassId2() const
++  { return m_baseInfo2 ? m_baseInfo2->GetClassId() : 0; }
++  const TClassInfo * GetBaseClassInfo1() const { return m_baseInfo1; }
++  const TClassInfo * GetBaseClassInfo2() const { return m_baseInfo2; }
++
++  static const TClassInfo * GetFirst() { return sm_first; }
++  const TClassInfo * GetNext() const { return m_next; }
++  static const TClassInfo * FindClass(int classId);
++
++  // Climb upwards through inheritance hierarchy.
++  bool IsKindOf(const TClassInfo * info) const;
++
++private:
++  int m_classId;
++
++  const TClassInfo * m_baseInfo1;
++  const TClassInfo * m_baseInfo2;
++
++  // class info object live in a linked list:
++  // pointers to its head and the next element in it
++  static TClassInfo * sm_first;
++  TClassInfo * m_next;
++
++  static THashTable * sm_classTable;
++
++protected:
++  // registers the class
++  void Register();
++  void Unregister();
++
++private:
++  TClassInfo(const TClassInfo &);
++  TClassInfo & operator=(const TClassInfo &);
++};
++
++#define NB_DECLARE_RUNTIME_CLASS(name)        \
++public:                                       \
++  static TClassInfo FClassInfo;               \
++  virtual TClassInfo * GetClassInfo() const;
++
++#define NB_DECLARE_CLASS(name)          \
++  NB_DECLARE_RUNTIME_CLASS(name)        \
++
++#define NB_GET_CLASS_INFO(name)         \
++  &name::FClassInfo
++
++#define NB_IMPLEMENT_CLASS(name, baseclassinfo1, baseclassinfo2) \
++  TClassInfo name::FClassInfo(OBJECT_CLASS_##name,    \
++    baseclassinfo1,                                   \
++    baseclassinfo2);                                  \
++  TClassInfo * name::GetClassInfo() const             \
++  { return &name::FClassInfo; }
++
++const TObject * NbStaticDownCastConst(TObjectClassId ClassId, const TObject * Object);
++TObject * NbStaticDownCast(TObjectClassId ClassId, TObject * Object);
++
++#define NB_STATIC_DOWNCAST_CONST(class_name, object) (static_cast<const class_name *>(NbStaticDownCastConst(OBJECT_CLASS_##class_name, static_cast<const TObject *>(object))))
++#define NB_STATIC_DOWNCAST(class_name, object) (static_cast<class_name *>(NbStaticDownCast(OBJECT_CLASS_##class_name, static_cast<TObject *>(object))))
++
++class THashTable : public rde::hash_map<int, const TClassInfo *>
++{
++CUSTOM_MEM_ALLOCATION_IMPL
++typedef rde::hash_map<int, const TClassInfo *> ancestor;
++public:
++  ancestor::mapped_type Get(const ancestor::key_type & key) const
++  {
++    ancestor::const_iterator it = ancestor::find(key);
++    if (it != ancestor::end())
++      return it->second;
++    else
++      return nullptr;
++  }
++  void Put(const ancestor::key_type & key, ancestor::mapped_type value)
++  {
++    ancestor::insert(ancestor::value_type(key, value));
++  }
++  void Delete(const ancestor::key_type & key)
++  {
++    ancestor::iterator it = ancestor::find(key);
++    if (it != ancestor::end())
++      ancestor::erase(it);
++  }
++  size_t GetCount() const { return ancestor::size(); }
++};
++
+diff --git a/src/core/Common.cpp b/src/core/Common.cpp
+index e4a222b..dc4fd9d 100644
+--- a/src/core/Common.cpp
++++ b/src/core/Common.cpp
+@@ -16,21 +16,6 @@
+ #include <shlwapi.h>
+ #include <CoreMain.h>
+ 
+-#if defined(__MINGW32__)
+-typedef struct _TIME_DYNAMIC_ZONE_INFORMATION
+-{
+-  LONG       Bias;
+-  WCHAR      StandardName[32];
+-  SYSTEMTIME StandardDate;
+-  LONG       StandardBias;
+-  WCHAR      DaylightName[32];
+-  SYSTEMTIME DaylightDate;
+-  LONG       DaylightBias;
+-  WCHAR      TimeZoneKeyName[128];
+-  BOOLEAN    DynamicDaylightTimeDisabled;
+-} DYNAMIC_TIME_ZONE_INFORMATION, *PDYNAMIC_TIME_ZONE_INFORMATION;
+-#endif
+-
+ // TGuard
+ 
+ TGuard::TGuard(const TCriticalSection & ACriticalSection) :
+diff --git a/src/core/Common.h b/src/core/Common.h
+index 155214f..692e644 100644
+--- a/src/core/Common.h
++++ b/src/core/Common.h
+@@ -1,6 +1,8 @@
+ 
+ #pragma once
+ 
++#define VA_FIX(MACRO, ...) MACRO(__VA_ARGS__)
++
+ #include <CoreDefs.hpp>
+ #include <headers.hpp>
+ 
+diff --git a/src/core/FtpFileSystem.cpp b/src/core/FtpFileSystem.cpp
+index 4d8902b..b2dfd6e 100644
+--- a/src/core/FtpFileSystem.cpp
++++ b/src/core/FtpFileSystem.cpp
+@@ -815,7 +815,7 @@ void TFTPFileSystem::ChangeFileProperties(const UnicodeString & AFileName,
+ 
+   if (Properties && Properties->Valid.Contains(vpRights))
+   {
+-    std::unique_ptr<TRemoteFile> OwnedFile(nullptr);
++    std::unique_ptr<TRemoteFile> OwnedFile;
+     UnicodeString FileName = GetAbsolutePath(AFileName, false);
+ 
+     if (AFile == nullptr)
+diff --git a/src/core/SessionData.cpp b/src/core/SessionData.cpp
+index ebd24ed..e778fc9 100644
+--- a/src/core/SessionData.cpp
++++ b/src/core/SessionData.cpp
+@@ -1655,7 +1655,7 @@ bool TSessionData::ParseUrl(const UnicodeString & Url, TOptions * Options,
+     if (Options->FindSwitch("rawsettings"))
+     {
+       std::unique_ptr<TStrings> RawSettings(new TStringList());
+-      std::unique_ptr<TRegistryStorage> OptionsStorage(nullptr);
++      std::unique_ptr<TRegistryStorage> OptionsStorage;
+       if (Options->FindSwitch("rawsettings", RawSettings.get()))
+       {
+         OptionsStorage.reset(new TRegistryStorage(GetConfiguration()->GetRegistryStorageKey()));
+diff --git a/src/core/SessionInfo.cpp b/src/core/SessionInfo.cpp
+index 5f53371..2523a00 100644
+--- a/src/core/SessionInfo.cpp
++++ b/src/core/SessionInfo.cpp
+@@ -1004,7 +1004,7 @@ void TSessionLog::DoAddStartupInfo(TSessionData * Data)
+           UnicodeString(PingTypes[PingType]).c_str(), PingInterval, Data->GetTimeout());
+       }
+       TProxyMethod ProxyMethod = Data->GetProxyMethod();
+-      ADF(L"Proxy: %s",
++      VA_FIX(ADF,L"Proxy: %s",
+         (Data->GetFtpProxyLogonType() != 0) ?
+           FORMAT(L"FTP proxy %d", Data->GetFtpProxyLogonType()).c_str() :
+           UnicodeString(ProxyMethodList[Data->GetActualProxyMethod()]).c_str());
+diff --git a/src/core/SftpFileSystem.cpp b/src/core/SftpFileSystem.cpp
+index 6494f58..a3cb891 100644
+--- a/src/core/SftpFileSystem.cpp
++++ b/src/core/SftpFileSystem.cpp
+@@ -2645,7 +2645,7 @@ uintptr_t TSFTPFileSystem::ReceiveResponse(
+ {
+   uintptr_t Result;
+   uintptr_t MessageNumber = Packet->GetMessageNumber();
+-  std::unique_ptr<TSFTPPacket> Response(nullptr);
++  std::unique_ptr<TSFTPPacket> Response;
+   if (!AResponse)
+   {
+     Response.reset(new TSFTPPacket(FCodePage));
+@@ -3062,7 +3062,7 @@ void TSFTPFileSystem::DoStartup()
+       }
+       else if (ExtensionName == SFTP_EXT_HARDLINK)
+       {
+-        UnicodeString HardlinkVersion = UnicodeString(ExtensionData);
++        UnicodeString HardlinkVersion = UnicodeString(ExtensionData.c_str());
+         if (HardlinkVersion == SFTP_EXT_HARDLINK_VALUE_V1)
+         {
+           FSupportsHardlink = true;
+@@ -5642,7 +5642,7 @@ void TSFTPFileSystem::SFTPSink(const UnicodeString & AFileName,
+       OperationProgress->Progress();
+ 
+       const TRemoteFile * File = AFile;
+-      std::unique_ptr<const TRemoteFile> FilePtr(nullptr);
++      std::unique_ptr<const TRemoteFile> FilePtr;
+       // ignore errors
+       if (RemoteFilePacket.GetType() == SSH_FXP_ATTRS)
+       {
+diff --git a/src/core/Terminal.cpp b/src/core/Terminal.cpp
+index 5f2f869..b94c0a4 100644
+--- a/src/core/Terminal.cpp
++++ b/src/core/Terminal.cpp
+@@ -2913,7 +2913,7 @@ TRemoteFileList * TTerminal::DoReadDirectoryListing(const UnicodeString & ADirec
+ void TTerminal::ProcessDirectory(const UnicodeString & ADirName,
+   TProcessFileEvent CallBackFunc, void * Param, bool UseCache, bool IgnoreErrors)
+ {
+-  std::unique_ptr<TRemoteFileList> FileList(nullptr);
++  std::unique_ptr<TRemoteFileList> FileList;
+   if (IgnoreErrors)
+   {
+     SetExceptionOnFail(true);
+@@ -5566,7 +5566,7 @@ bool TTerminal::CopyToLocal(const TStrings * AFilesToCopy,
+ 
+   bool Result = false;
+   bool OwnsFileList = (AFilesToCopy == nullptr);
+-  std::unique_ptr<TStrings> FilesToCopy(nullptr);
++  std::unique_ptr<TStrings> FilesToCopy;
+   TOnceDoneOperation OnceDoneOperation = odoIdle;
+ 
+   if (OwnsFileList)
+-- 
+1.9.4.msysgit.2
+

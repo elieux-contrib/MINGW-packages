@@ -1,0 +1,118 @@
+# Maintainer: David Macek <david.macek.0@gmail.com>
+
+_realname=far
+
+pkgname=${MINGW_PACKAGE_PREFIX}-${_realname}-svn
+pkgver=3.0.0.4304.r13019
+pkgrel=1
+pkgdesc="Extensible text mode file manager (mingw-w64)"
+arch=('any')
+provides=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+url="http://www.farmanager.com/"
+license=('BSD')
+makedepends=("subversion" "git"
+             "${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-gcc")
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-lua")
+source=("${_realname}::svn+http://farmanager.googlecode.com/svn/trunk"
+        "netbox::git+http://github.com/michaellukashov/Far-NetBox.git"
+        "use-system-lua.patch"
+        "netbox-mingw.patch")
+md5sums=('SKIP'
+         'SKIP'
+         '90b209ee8072d4a96c660a794ecb9209'
+         '2b4e9edbe37b4876fa4c52029c664c8e')
+
+_plugins="align autowrap brackets compare drawline editcase farcmds filecase hlfviewer luamacro network proclist samefolder tmppanel"
+# missing: arclite newarc emenu farcolorer netbox
+
+pkgver() {
+  cd "${srcdir}/${_realname}/unicode_far"
+  local ver="$(echo "m4_include(farversion.m4)m4_format(\`%d.%d.%d.%d',MAJOR,MINOR,REVISION,BUILD)" | m4 -P)"
+  local rev="$(svnversion)"
+  printf "%s.r%s" "${ver}" "${rev//[[:alpha:]]}"
+}
+
+prepare() {
+  cd "${srcdir}/${_realname}"
+  rm -r unicode_far/tools plugins/arclite/tools/tool.exe plugins/luamacro/luasdk plugins/newarc/src/lng.generator.exe plugins/newarc/bin
+  patch -p1 -i "${srcdir}/use-system-lua.patch"
+
+  cd "${srcdir}/netbox"
+  patch -p1 -i "${srcdir}/netbox-mingw.patch"
+}
+
+build() {
+  local _bit _arch
+  case ${CARCH} in
+  x86_64) _bit=64; _arch=x64 ;;
+  i686) _bit=32; _arch=x86 ;;
+  esac
+
+  cd "${srcdir}/${_realname}/misc/lng"
+  for f in *.cpp; do
+    if [ ${f} != 'lng.inserter.cpp' ]; then # wstring problems
+      g++ -c -std=c++11 -Wno-literal-suffix -Wno-write-strings -o ${f%%.cpp}.o ${f}
+    fi
+  done
+  for f in *.o; do
+    if [ ${f} != 'lng.common.o' ]; then
+      g++ -o ${f%%.o}.exe ${f} lng.common.o
+    fi
+  done
+
+  cd "${srcdir}/${_realname}/unicode_far"
+  make -f makefile_gcc DIRBIT=${_bit} LGEN="../misc/lng/lng.generator.exe" TOOLSDIR="" HOST_TYPE=Fixit
+
+  cd "${srcdir}/${_realname}/plugins"
+  make -f makefile_all_gcc DIRBIT=${_bit} ALLDIRS="${_plugins}" LUA=lua LUAVER=52
+
+  #cd "${srcdir}/netbox"
+  #mkdir build
+  #cd build
+  #cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCONF=${_arch} -DFAR_VERSION=Far3 ../src/netbox
+  #make
+}
+
+package() {
+  local _bit
+  case ${CARCH} in
+  x86_64) _bit=64 ;;
+  i686) _bit=32 ;;
+  esac
+
+  mkdir -p "${pkgdir}${MINGW_PREFIX}/bin"                         \
+           "${pkgdir}${MINGW_PREFIX}/bin/addons"                  \
+           "${pkgdir}${MINGW_PREFIX}/bin/plugins"                 \
+           "${pkgdir}${MINGW_PREFIX}/include/${_realname}"        \
+           "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}"      \
+           "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}"
+
+  cd "${srcdir}/${_realname}/unicode_far"
+  cp Release.${_bit}.gcc/*.{exe,dll,hlf,lng,ini} "${pkgdir}${MINGW_PREFIX}/bin"
+  # .map?
+  cp Include/* "${pkgdir}${MINGW_PREFIX}/include/${_realname}"
+  cp README* CONTRIBUTORS changelog* "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}"
+  cp LICENSE "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}"
+
+  shopt -s nullglob
+  cd "${srcdir}/${_realname}/plugins"
+  mkdir -p "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}/plugins" \
+           "${pkgdir}${MINGW_PREFIX}/bin/plugins"
+  for p in ${_plugins}; do
+    mkdir "${pkgdir}${MINGW_PREFIX}/bin/plugins/${p}"                    \
+          "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}/plugins/${p}"
+    cp "${p}/final.${_bit}W.gcc"/*.{dll,hlf,lng,ini,lua,farconfig,temp} "${pkgdir}${MINGW_PREFIX}/bin/plugins/${p}"
+    # .map?
+    cp "${p}"/changelog* "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}/plugins/${p}"
+  done
+  shopt -u nullglob
+
+  cd "${srcdir}/${_realname}/addons"
+  cp -r * "${pkgdir}${MINGW_PREFIX}/bin/addons"
+
+  cd "${srcdir}/${_realname}/docs"
+  cp -r ENG RUS "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}"
+}
