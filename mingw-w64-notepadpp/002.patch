@@ -1,0 +1,12 @@
+diff -Naur npp.6.7.5.src/PowerEditor/src/ScitillaComponent/ScintillaEditView.cpp PowerEditor/src/ScitillaComponent/ScintillaEditView.cpp
+--- npp.6.7.5.src/PowerEditor/src/ScitillaComponent/ScintillaEditView.cpp	2015-03-13 02:10:20.457364900 +0100
++++ PowerEditor/src/ScitillaComponent/ScintillaEditView.cpp	2014-12-18 00:10:21.412661000 +0100
+@@ -38,7 +38,7 @@
+ TCHAR * getSciLexerFullPathName(TCHAR * moduleFileName, size_t len){
+ 	::GetModuleFileName(NULL, moduleFileName, len);
+ 	::PathRemoveFileSpec(moduleFileName);
+-	::PathAppend(moduleFileName, TEXT("libSciLexerNPP.dll"));
++	::PathAppend(moduleFileName, TEXT("SciLexer.dll"));
+ 	return moduleFileName;
+ };
+ 

@@ -1,0 +1,83 @@
+diff -Naur src/npp.6.7.5.src/scintilla/lexers/LexSearchResult.cxx src/scintilla/lexers/LexSearchResult.cxx
+--- src/npp.6.7.5.src/scintilla/lexers/LexSearchResult.cxx	2010-08-27 03:01:10.708171000 +0200
++++ src/scintilla/lexers/LexSearchResult.cxx	2015-03-13 02:00:32.660561300 +0100
+@@ -40,7 +40,7 @@
+ #include "LexerModule.h"
+ 
+ // The following definitions are a copy of the ones in FindReplaceDlg.h
+-static enum { searchHeaderLevel = SC_FOLDLEVELBASE + 1, fileHeaderLevel, resultLevel };
++enum { searchHeaderLevel = SC_FOLDLEVELBASE + 1, fileHeaderLevel, resultLevel };
+ 
+ 
+ static inline bool AtEOL(Accessor &styler, unsigned int i) {
+diff -Naur src/npp.6.7.5.src/scintilla/lexers/LexUser.cxx src/scintilla/lexers/LexUser.cxx
+--- src/npp.6.7.5.src/scintilla/lexers/LexUser.cxx	2014-01-06 00:15:13.923462000 +0100
++++ src/scintilla/lexers/LexUser.cxx	2015-03-13 02:00:08.574594600 +0100
+@@ -135,7 +135,7 @@
+ };
+ 
+ using namespace std;
+-typedef vector<vector<string>> vvstring;
++typedef vector<vector<string> > vvstring;
+ 
+ // static vector<int> * foldVectorStatic;  // foldVectorStatic is used for debugging only, it should be commented out in production code !
+ 
+@@ -930,7 +930,7 @@
+     // forward check for standard (sigle part) keywords
+ 
+     skipForward = 0;
+-    vector<vector<string>>::iterator iter1 = openVector.begin();
++    vector<vector<string> >::iterator iter1 = openVector.begin();
+     vector<string>::iterator iter2;
+ 
+     for (; iter1 != openVector.end(); ++iter1)
+@@ -1654,7 +1654,7 @@
+     levelNext = levelCurrent;
+ 
+     StyleContext sc(startPos, length, initStyle, styler);
+-    for (; finished; dontMove?true:sc.Forward())
++    for (; finished; dontMove?(void)0:sc.Forward())
+     {
+         dontMove = false;
+         checkEOL = EOL_DEFAULT_VALUE;
+diff -Naur src/npp.6.7.5.src/scintilla/lexlib/WordList.h src/scintilla/lexlib/WordList.h
+--- src/npp.6.7.5.src/scintilla/lexlib/WordList.h	2013-08-28 02:44:27.636091000 +0200
++++ src/scintilla/lexlib/WordList.h	2015-03-13 01:58:13.953023300 +0100
+@@ -32,7 +32,7 @@
+ 	bool InList(const char *s) const;
+ 	bool InListAbbreviated(const char *s, const char marker) const;
+ 	const char *WordAt(int n) const;
+-	void WordList::SetWordAt(int n, const char *word2Set) {
++	void SetWordAt(int n, const char *word2Set) {
+ 		words[n] = (char *)word2Set;
+ 	};
+ 	int StartAt(int n) const {
+diff -Naur src/npp.6.7.5.src/scintilla/win32/makefile src/scintilla/win32/makefile
+--- src/npp.6.7.5.src/scintilla/win32/makefile	2013-08-28 02:44:27.636091000 +0200
++++ src/scintilla/win32/makefile	2015-03-13 01:54:43.661307000 +0100
+@@ -6,10 +6,10 @@
+ 
+ .SUFFIXES: .cxx
+ CC = g++
+-DEL = del /q
++DEL = rm -f
+ 
+-COMPONENT = ../bin/Scintilla.dll
+-LEXCOMPONENT = ../bin/SciLexer.dll
++COMPONENT = ../bin/libScintillaNPP.dll
++LEXCOMPONENT = ../bin/libSciLexerNPP.dll
+ LEXLIB = Lexers.a
+ 
+ vpath %.h ../src ../include ../lexlib
+diff -Naur npp.6.7.5.src/PowerEditor/src/ScitillaComponent/ScintillaEditView.cpp PowerEditor/src/ScitillaComponent/ScintillaEditView.cpp
+--- npp.6.7.5.src/PowerEditor/src/ScitillaComponent/ScintillaEditView.cpp	2015-03-13 02:10:20.457364900 +0100
++++ PowerEditor/src/ScitillaComponent/ScintillaEditView.cpp	2014-12-18 00:10:21.412661000 +0100
+@@ -38,7 +38,7 @@
+ TCHAR * getSciLexerFullPathName(TCHAR * moduleFileName, size_t len){
+ 	::GetModuleFileName(NULL, moduleFileName, len);
+ 	::PathRemoveFileSpec(moduleFileName);
+-	::PathAppend(moduleFileName, TEXT("libSciLexerNPP.dll"));
++	::PathAppend(moduleFileName, TEXT("SciLexer.dll"));
+ 	return moduleFileName;
+ };
+ 

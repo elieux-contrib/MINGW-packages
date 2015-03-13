@@ -1,0 +1,59 @@
+# Maintainer: David Macek <david.macek.0@gmail.com>
+
+_realname=notepadpp
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=6.7.5
+pkgrel=1
+pkgdesc="Free source code editor and Notepad replacement (mingw-w64)"
+arch=('any')
+url="http://notepad-plus-plus.org/"
+license=("GPL2" "custom:scite")
+makedepends=("${MINGW_PACKAGE_PREFIX}-gcc")
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-boost")
+source=("http://dl.notepad-plus-plus.org/downloads/6.x/6.7.5/npp.6.7.5.src.7z"
+        "001.patch")
+md5sums=('8f9fe37d7fb9f7c518aa8db6d026be81')
+
+prepare() {
+  patch -p1 -i 001.patch
+  rm -r PowerEditor/bin
+  mkdir PowerEditor/bin
+  mkdir -p "${srcdir}"/build-${CARCH}
+  cp -r "${srcdir}"/{PowerEditor,scintilla} "${srcdir}"/build-${CARCH}
+}
+
+build() {
+  cd "${srcdir}"/build-${CARCH}
+  
+  make -C scintilla/win32
+  make -C PowerEditor/gcc
+}
+
+package() {
+  cd "${srcdir}"/build-${CARCH}
+
+  mkdir -p "${pkgdir}"${MINGW_PREFIX}/bin
+  cp scintilla/bin/lib{Scintilla,SciLexer}.dll "${pkgdir}"${MINGW_PREFIX}/bin
+  cp scite/bin/SciTE.exe "${pkgdir}"${MINGW_PREFIX}/bin
+
+  mkdir -p "${pkgdir}"${MINGW_PREFIX}/lib
+  cp scintilla/bin/libScintillaGtk.a "${pkgdir}"${MINGW_PREFIX}/lib
+
+  mkdir -p "${pkgdir}"${MINGW_PREFIX}/include/scintilla
+  cp scintilla/include/{*.h,*.iface} "${pkgdir}"${MINGW_PREFIX}/include/scintilla
+
+  mkdir -p "${pkgdir}"${MINGW_PREFIX}/share/scite
+  cp scite/bin/SciTEGlobal.properties "${pkgdir}"${MINGW_PREFIX}/share/scite
+
+  mkdir -p "${pkgdir}"${MINGW_PREFIX}/share/doc/scite
+  cp scite/doc/{*.png,*.jpg,*.html} "${pkgdir}"${MINGW_PREFIX}/share/doc/scite
+
+  mkdir -p "${pkgdir}"${MINGW_PREFIX}/share/man/man1
+  cp scite/doc/scite.1 "${pkgdir}"${MINGW_PREFIX}/share/man/man1/SciTE.1
+
+  mkdir -p "${pkgdir}"${MINGW_PREFIX}/share/licenses/scite
+  cp scintilla/License.txt "${pkgdir}"${MINGW_PREFIX}/share/licenses/scite/LICENSE-scintilla
+  cp scite/License.txt "${pkgdir}"${MINGW_PREFIX}/share/licenses/scite/LICENSE-scite
+  cp scite/lua/COPYRIGHT "${pkgdir}"${MINGW_PREFIX}/share/licenses/scite/LICENSE-lua
+}
