@@ -1,0 +1,43 @@
+# Maintainer: David Macek <david.macek.0@gmail.com>
+
+_realname=xming
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=6.9.0.31
+pkgrel=1
+pkgdesc='Native X Window server (mingw-w64)'
+arch=('any')
+url='http://sourceforge.net/projects/xming/'
+license=('BSD' 'PD' 'MIT' 'zlib')
+source=(http://downloads.sourceforge.net/xming/Xming-source/${pkgver}/Xming_${pkgver//./}_source.tar.bz2)
+#####http://sourceforge.net/projects/xming/files/Xming-fonts-source/7.5.0.70/dejavu-fonts-2.34.tar.bz2/download
+md5sums=('f8d063d040b1b598c6f1f6c0e5d46d6c')
+
+prepare() {
+true
+#  cd $srcdir/${_realname}-${pkgver}
+#  patch -p1 -i ${srcdir}/0001-A-fix.patch
+}
+
+build() {
+  cd "$srcdir"/${_realname}-${pkgver}
+  [ -d "${srcdir}"/build-${CARCH} ] && rm -rf "${srcdir}"/build-${CARCH}
+  mkdir -p "${srcdir}"/build-${CARCH} && cd "${srcdir}"/build-${CARCH}
+  ../${_realname}-${pkgver}/configure \
+    --prefix=${MINGW_PREFIX} \
+    --build=${MINGW_CHOST} \
+    --host=${MINGW_CHOST} \
+    --target=${MINGW_CHOST} \
+    --enable-static \
+    --enable-shared
+  make
+}
+
+check() {
+  cd "${srcdir}"/build-${CARCH}
+  make check
+}
+
+package() {
+  cd "${srcdir}"/build-${CARCH}
+  make install DESTDIR="${pkgdir}"
+}
