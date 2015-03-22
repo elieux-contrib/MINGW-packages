@@ -1,0 +1,145 @@
+# Maintainer: David Macek <david.macek.0@gmail.com>
+# Maintainer (Arch Linux):  Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor (Arch Linux): Chris Brannon <cmbrannon79@gmail.com>
+# Contributor (Arch Linux): Geoffroy Carrier <geoffroy@archlinux.org>
+
+_realname=rocks
+pkgname=("${MINGW_PACKAGE_PREFIX}-lua-rocks"
+         "${MINGW_PACKAGE_PREFIX}-lua51-rocks")
+pkgver=2.2.1
+pkgrel=1
+arch=('any')
+url='http://luarocks.org/'
+license=('custom')
+depends=('unzip' 'zip' 'wget' 'p7zip' 'zip' 'unzip' 'gzip' 'bzip2' 'tar'
+         "${MINGW_PACKAGE_PREFIX}-openssl"
+         "${MINGW_PACKAGE_PREFIX}-curl")
+makedepends=("${MINGW_PACKAGE_PREFIX}-lua"
+             "${MINGW_PACKAGE_PREFIX}-lua51")
+optdepends=('cvs: for fetching sources from CVS repositories'
+            'git: for fetching sources from git repositories'
+            'mercurial: for fetching sources from mercurial repositories'
+            "${MINGW_PACKAGE_PREFIX}-cmake: for building rocks that use the cmake build system")
+options=('!makeflags')
+source=("http://luarocks.org/releases/lua${_realname}-${pkgver}.tar.gz"
+        'site_config.patch'
+        'mingw.patch'
+        'wrapper.cmd')
+md5sums=('718a0e8c257aace3ec16ebc2cfe9c696'
+         '700ee0b9884d90160d748e68cea9f43e'
+         'a76fb1961a1313db2723d5148f6aa1f4'
+         'c785082eaf9cbe4fa0853afdddcd9a9d')
+
+prepare() {
+  cd "lua${_realname}-${pkgver}"
+  patch -p0 -i "${srcdir}/mingw.patch"
+
+  mkdir -p "${srcdir}/build-${CARCH}" "${srcdir}/build-51-${CARCH}"
+  cp -r * "${srcdir}/build-${CARCH}"
+  cp -r * "${srcdir}/build-51-${CARCH}"
+}
+
+build() {
+  local sysluaver=$(pkg-config lua --modversion | sed -r 's/^([0-9]+[.][0-9]+)[.][0-9]+$/\1/')
+
+  cd "${srcdir}/build-${CARCH}"
+  LUA_VERSION= ./configure \
+    --prefix=${MINGW_PREFIX} \
+    --sysconfdir=${MINGW_PREFIX}/etc/luarocks \
+    --lua-version=$sysluaver \
+    --with-lua-include=${MINGW_PREFIX}/include \
+    --with-downloader=curl \
+    --versioned-rocks-dir
+  make
+
+  cd "${srcdir}/build-51-${CARCH}"
+  ./configure \
+    --prefix=${MINGW_PREFIX} \
+    --sysconfdir=${MINGW_PREFIX}/etc/luarocks \
+    --lua-version=5.1 \
+    --with-lua-include=${MINGW_PREFIX}/include/lua5.1 \
+    --with-downloader=curl \
+    --versioned-rocks-dir
+  make
+}
+
+package_mingw-w64-lua-rocks() {
+  local sysluaver=$(pkg-config lua --modversion | sed -r 's/^([0-9]+[.][0-9]+)[.][0-9]+$/\1/')
+  local versuffix=$(echo $sysluaver | tr '.' '_')
+
+  pkgdesc='Deployment and management system for Lua modules (mingw-w64)'
+  backup=("${MINGW_PREFIX#/}/etc/luarocks/config-$sysluaver.lua")
+  depends+=("${MINGW_PACKAGE_PREFIX}-lua")
+
+  cd "${srcdir}/build-${CARCH}"
+  make install DESTDIR="$pkgdir"
+  install -D COPYING "$pkgdir"${MINGW_PREFIX}/share/licenses/lua-${_realname}/LICENSE
+
+  # wrappers for utils
+  mkdir -p "$pkgdir"${MINGW_PREFIX}/lib/luarocks/$sysluaver
+  echo "@cd" > "$pkgdir"${MINGW_PREFIX}/lib/luarocks/$sysluaver/pwd.cmd
+  for e in md5sum md5 stat cp find ls mkdir mv rm rmdir chmod test uname wget 7z zip unzip tar svn git hg cvs rsync scp; do
+    echo "@set CHERE_INVOKING=1 & @\"%~dp0..\\..\\..\\..\\usr\\bin\\bash\" --login -c '$e \"\$@\"' bash %*" > "$pkgdir"${MINGW_PREFIX}/lib/luarocks/$sysluaver/$e.cmd
+  done
+
+  for e in luarocks{,-admin}{,-$sysluaver}; do
+    cat "${srcdir}/wrapper.cmd" | sed "s/@EXE@/$e/" > "${pkgdir}"${MINGW_PREFIX}/bin/$e.cmd
+  done
+
+  cd "$pkgdir"${MINGW_PREFIX}/etc/luarocks
+  sed -i 's/root = \[\[.*\]\]/root = site_config.LUAROCKS_ROCKS_TREE/' config-$sysluaver.lua
+  cd "$pkgdir"${MINGW_PREFIX}/share/lua/$sysluaver
+  sed -i "s/@VER@/$sysluaver/" luarocks/cfg.lua
+  sed -i '/^LUAROCKS_UNAME_M/d' luarocks/site_config.lua # FS#40388
+  patch -p0 -i "${srcdir}/site_config.patch"
+  sed -i "s/@VERSUFFIX@/$versuffix/" luarocks/site_config.lua
+
+}
+
+package_mingw-w64-lua51-rocks() {
+  local versuffix=$(echo 5.1 | tr '.' '_')
+
+  pkgdesc='Deployment and management system for Lua 5.1 modules (mingw-w64)'
+  backup=("${MINGW_PREFIX#/}/etc/luarocks/config-5.1.lua")
+  depends+=("${MINGW_PACKAGE_PREFIX}-lua51")
+
+  cd "${srcdir}/build-51-${CARCH}"
+  make install DESTDIR="$pkgdir"
+  install -D COPYING "$pkgdir"${MINGW_PREFIX}/share/licenses/lua51-${_realname}/LICENSE
+
+  # wrappers for utils
+  mkdir -p "$pkgdir"${MINGW_PREFIX}/lib/luarocks/5.1
+  echo "@cd" > "$pkgdir"${MINGW_PREFIX}/lib/luarocks/5.1/pwd.cmd
+  for e in md5sum md5 stat cp find ls mkdir mv rm rmdir chmod test uname wget 7z zip unzip tar svn git hg cvs rsync scp; do
+    echo "@set CHERE_INVOKING=1 & @\"%~dp0..\\..\\..\\..\\usr\\bin\\bash\" --login -c '$e \"\$@\"' bash %*" > "$pkgdir"${MINGW_PREFIX}/lib/luarocks/5.1/$e.cmd
+  done
+
+  rm "$pkgdir"${MINGW_PREFIX}/bin/luarocks{,-admin}
+  for e in luarocks{,-admin}-5.1; do
+    cat "${srcdir}/wrapper.cmd" | sed "s/@EXE@/$e/" > "${pkgdir}"${MINGW_PREFIX}/bin/$e.cmd
+  done
+
+  cd "$pkgdir"${MINGW_PREFIX}/etc/luarocks
+  sed -i 's/root = \[\[.*\]\]/root = site_config.LUAROCKS_ROCKS_TREE/' config-5.1.lua
+  cd "$pkgdir"${MINGW_PREFIX}/share/lua/5.1
+  sed -i "s/@VER@/5.1/" luarocks/cfg.lua
+  sed -i '/^LUAROCKS_UNAME_M/d' luarocks/site_config.lua # FS#40388
+  patch -p0 -i "${srcdir}/site_config.patch"
+  sed -i "s/@VERSUFFIX@/$versuffix/" luarocks/site_config.lua
+}
+
+package_mingw-w64-i686-lua-rocks() {
+  package_mingw-w64-lua-rocks
+}
+
+package_mingw-w64-x86_64-lua-rocks() {
+    package_mingw-w64-lua-rocks
+}
+
+package_mingw-w64-i686-lua51-rocks() {
+    package_mingw-w64-lua51-rocks
+}
+
+package_mingw-w64-x86_64-lua51-rocks() {
+    package_mingw-w64-lua51-rocks
+}

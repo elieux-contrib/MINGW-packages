@@ -1,0 +1,16 @@
+--- luarocks/site_config.lua.orig	2015-03-21 12:40:03.357753500 +0100
++++ luarocks/site_config.lua	2015-03-21 15:15:27.277306600 +0100
+@@ -12,2 +12,13 @@
+ site_config.LUAROCKS_MD5CHECKER=[[md5sum]]
++
++local prefix, prefix_msys
++prefix_msys = site_config.LUAROCKS_PREFIX
++prefix = io.popen('set LUA_CPATH_@VERSUFFIX@=! & lua -e print(package.cpath)'):read()
++prefix = string.sub(prefix, 0, -2) -- get rid of CRLF
++prefix = prefix.sub(prefix, 0, -5) -- get rid of /bin
++
++for k, v in pairs(site_config) do
++  site_config[k] = string.gsub(site_config[k], prefix_msys, prefix)
++end
++
+ return site_config

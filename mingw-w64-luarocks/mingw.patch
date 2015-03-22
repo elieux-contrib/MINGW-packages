@@ -1,0 +1,126 @@
+--- src/luarocks/cfg.lua.orig	2015-03-17 19:37:08.000000000 +0100
++++ src/luarocks/cfg.lua	2015-03-22 00:38:21.365288100 +0100
+@@ -131,16 +131,14 @@
+ local extra_luarocks_module_dir
+ sys_config_dir = site_config.LUAROCKS_SYSCONFDIR
+ if detected.windows then
+-   cfg.home = os.getenv("APPDATA") or "c:"
+-   sys_config_dir = sys_config_dir or "c:/luarocks"
+-   home_config_dir = cfg.home.."/luarocks"
+-   cfg.home_tree = cfg.home.."/luarocks/"
++   cfg.home = os.getenv("HOME") or os.getenv("USERPROFILE") or ""
+ else
+    cfg.home = os.getenv("HOME") or ""
++end
++
+    sys_config_dir = sys_config_dir or "/etc/luarocks"
+    home_config_dir = cfg.home.."/.luarocks"
+    cfg.home_tree = cfg.home.."/.luarocks/"
+-end
+ 
+ cfg.variables = {}
+ cfg.rocks_trees = {}
+@@ -301,9 +299,6 @@
+ }
+ 
+ if detected.windows then
+-   local full_prefix = site_config.LUAROCKS_PREFIX.."\\"..cfg.major_version
+-   extra_luarocks_module_dir = full_prefix.."\\lua\\?.lua"
+-
+    home_config_file = home_config_file and home_config_file:gsub("\\","/")
+    defaults.fs_use_modules = false
+    defaults.arch = "win32-"..proc
+@@ -320,18 +315,16 @@
+    defaults.variables.MAKE = "nmake"
+    defaults.variables.CC = "cl"
+    defaults.variables.RC = "rc"
+-   defaults.variables.WRAPPER = full_prefix.."\\rclauncher.c"
+    defaults.variables.LD = "link"
+    defaults.variables.MT = "mt"
+    defaults.variables.LUALIB = "lua"..cfg.lua_version..".lib"
+    defaults.variables.CFLAGS = "/MD /O2"
+    defaults.variables.LIBFLAG = "/dll"
+ 
+-   local bins = { "SEVENZ", "CP", "FIND", "LS", "MD5SUM",
+-      "MKDIR", "MV", "PWD", "RMDIR", "TEST", "UNAME", "WGET" }
++   local bins = { "CVS", "GIT", "SVN", "HG", "RSYNC", "WGET", "SCP", "PWD", "MKDIR", "RMDIR", "CP", "LS", "RM", "FIND", "TEST", "CHMOD", "ZIP", "UNZIP", "GUNZIP", "BUNZIP2", "TAR", "MD5SUM", "MD5", "STAT", "SEVENZ", "UNAME" }
+    for _, var in ipairs(bins) do
+       if defaults.variables[var] then
+-         defaults.variables[var] = full_prefix.."\\tools\\"..defaults.variables[var]
++         defaults.variables[var] = site_config.LUAROCKS_PREFIX..'\\lib\\luarocks\\@VER@\\'..defaults.variables[var]
+       end
+    end
+ 
+@@ -363,6 +356,10 @@
+ if detected.mingw32 then
+    defaults.platforms = { "win32", "mingw32", "windows" }
+    defaults.obj_extension = "o"
++   defaults.external_deps_dirs = { site_config.LUAROCKS_PREFIX }
++   defaults.variables.LUA_BINDIR = site_config.LUA_BINDIR:gsub("\\", "/")
++   defaults.variables.LUA_INCDIR = site_config.LUA_INCDIR:gsub("\\", "/")
++   defaults.variables.LUA_LIBDIR = site_config.LUA_LIBDIR:gsub("\\", "/")
+    defaults.cmake_generator = "MinGW Makefiles"
+    defaults.variables.MAKE = "mingw32-make"
+    defaults.variables.CC = "mingw32-gcc"
+@@ -371,18 +368,18 @@
+    defaults.variables.CFLAGS = "-O2"
+    defaults.variables.LIBFLAG = "-shared"
+    defaults.external_deps_patterns = {
+-      bin = { "?.exe", "?.bat" },
++      bin = { "?.exe", "?.bat", "?.cmd" },
+       -- mingw lookup list from http://stackoverflow.com/a/15853231/1793220
+       -- ...should we keep ?.lib at the end? It's not in the above list.
+-      lib = { "lib?.dll.a", "?.dll.a", "lib?.a", "cyg?.dll", "lib?.dll", "?.dll", "?.lib" },
++      lib = { "lib?.dll.a", "?.dll.a", "lib?.a", "lib?.dll", "?.dll", "?.lib" },
+       include = { "?.h" }
+    }
+    defaults.runtime_external_deps_patterns = {
+-      bin = { "?.exe", "?.bat" },
+-      lib = { "cyg?.dll", "?.dll", "lib?.dll" },
++      bin = { "?.exe", "?.bat", "?.cmd" },
++      lib = { "?.dll", "lib?.dll" },
+       include = { "?.h" }
+    }
+-
++   defaults.local_cache = cfg.home.."/.cache/luarocks"
+ end
+ 
+ if detected.unix then
+--- src/luarocks/fs/win32/tools.lua.orig	2015-03-17 19:37:08.000000000 +0100
++++ src/luarocks/fs/win32/tools.lua	2015-03-22 01:10:27.588436300 +0100
+@@ -149,7 +149,7 @@
+ -- plus an error message.
+ function tools.copy_contents(src, dest)
+    assert(src and dest)
+-   if fs.execute_quiet(fs.Q(vars.CP), "-dR", src.."\\*.*", dest) then
++   if fs.execute_quiet(fs.Q(vars.CP), "-dR", src.."\\*", dest) then
+       return true
+    else
+       return false, "Failed copying "..src.." to "..dest
+@@ -163,7 +163,7 @@
+ function tools.delete(arg)
+    assert(arg)
+    assert(arg:match("^[a-zA-Z]?:?[\\/]"))
+-   fs.execute_quiet("if exist "..fs.Q(arg.."\\").." ( RMDIR /S /Q "..fs.Q(arg).." ) else ( DEL /Q /F "..fs.Q(arg).." )")
++   fs.execute_quiet(fs.Q(vars.RM), "-r", arg)
+ end
+ 
+ --- Internal implementation function for fs.dir.
+@@ -229,7 +229,7 @@
+ -- @return boolean: true if it is a directory, false otherwise.
+ function tools.is_dir(file)
+    assert(file)
+-   return fs.execute_quiet("if not exist " .. fs.Q(file.."\\").." invalidcommandname")
++   return fs.execute_quiet(fs.Q(vars.TEST).." -d", file)
+ end
+ 
+ --- Test is pathname is a regular file.
+@@ -359,7 +359,7 @@
+ -- @return boolean: true if file exists, false otherwise.
+ function tools.exists(file)
+    assert(file)
+-   return fs.execute_quiet("if not exist " .. fs.Q(file) .. " invalidcommandname")
++   return fs.execute_quiet(fs.Q(vars.TEST).." -e", file)
+ end
+ 
+ function tools.browser(url)
