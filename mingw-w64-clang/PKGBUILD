@@ -16,6 +16,7 @@ license=("custom:University of Illinois/NCSA Open Source License")
 makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
              "${MINGW_PACKAGE_PREFIX}-pkg-config"
              "${MINGW_PACKAGE_PREFIX}-python3-sphinx"
+             "${MINGW_PACKAGE_PREFIX}-swig"
              "python2" "tar")
 depends=("${MINGW_PACKAGE_PREFIX}-gcc")
 options=('staticlibs' 'strip')
@@ -93,12 +94,12 @@ prepare() {
   [ -d tools/clang/tools/extra ] && rm -rf tools/clang/tools/extra
   mv "$srcdir/clang-tools-extra-$pkgver.src" tools/clang/tools/extra
 
-  #[ -d tools/lldb ] && rm -rf tools/lldb
-  #mv "$srcdir/lldb-$pkgver.src" tools/lldb
-  #sed -i -e "s|python-config|python2-config|" tools/lldb/lib/Makefile
-  #sed -i -e "s|python-config|python2-config|" tools/lldb/Makefile
-  #sed -i -e "s|/usr/bin/env python|&2|" tools/lldb/scripts/Python/build-swig-Python.sh
-  #sed -i -e "s|/usr/bin/env python|&2|" tools/lldb/scripts/Python/finish-swig-Python-LLDB.sh
+  [ -d tools/lldb ] && rm -rf tools/lldb
+  mv "$srcdir/lldb-$pkgver.src" tools/lldb
+  sed -i -e "s|python-config|python2-config|" tools/lldb/lib/Makefile
+  sed -i -e "s|python-config|python2-config|" tools/lldb/Makefile
+  sed -i -e "s|/usr/bin/env python|&2|" tools/lldb/scripts/Python/build-swig-Python.sh
+  sed -i -e "s|/usr/bin/env python|&2|" tools/lldb/scripts/Python/finish-swig-Python-LLDB.sh
 
   #[ -d projects/libcxx-$pkgver ] && rm -rf projects/libcxx
   #mv "$srcdir/libcxx-$pkgver.src" projects/libcxx
