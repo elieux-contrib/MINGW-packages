@@ -330,6 +330,9 @@ package_mingw-w64-gcc() {
   #cp share/locale/* ${pkgdir}${MINGW_PREFIX}/share/locale/
   mkdir -p ${pkgdir}${MINGW_PREFIX}/share/gcc-${pkgver}/python
   cp -r share/gcc-${pkgver}/python/libstdcxx  ${pkgdir}${MINGW_PREFIX}/share/gcc-${pkgver}/python/
+  mkdir -p $pkgdir${MINGW_PREFIX}/share/gdb/auto-load
+  mv $pkgdir${MINGW_PREFIX}/lib/gcc/${MINGW_CHOST}/${pkgver}/libstdc++*-gdb.py $pkgdir${MINGW_PREFIX}/share/gdb/auto-load/libstdc++-6.so-gdb.py
+
   mkdir -p ${pkgdir}${MINGW_PREFIX}/share/man/man1
   cp share/man/man1/cpp.1* ${pkgdir}${MINGW_PREFIX}/share/man/man1/
   cp share/man/man1/gcc.1* ${pkgdir}${MINGW_PREFIX}/share/man/man1/
