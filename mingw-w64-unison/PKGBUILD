@@ -1,0 +1,54 @@
+# Maintainer: David Macek <david.macek.0@gmail.com>
+
+_realname=unison
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=2.48.3
+pkgrel=1
+pkgdesc='Two-way file-synchronization tool (mingw-w64)'
+arch=('any')
+url='https://www.cis.upenn.edu/~bcpierce/unison/'
+#optdepends=("${MINGW_PACKAGE_PREFIX}-gtk2: graphical UI")
+makedepends=("${MINGW_PACKAGE_PREFIX}-ocaml"
+             #"${MINGW_PACKAGE_PREFIX}-ocaml-lablgtk"
+             "${MINGW_PACKAGE_PREFIX}-imagemagick")
+license=('GPL2')
+source=("http://www.seas.upenn.edu/~bcpierce/unison/download/releases/stable/${_realname}-${pkgver}.tar.gz"
+        "http://www.seas.upenn.edu/~bcpierce/unison/download/releases/stable/${_realname}-${pkgver}-manual.html")
+md5sums=('91ff2ef4141aede9af719fdd5e848bcb'
+         'ecd304e01a675a1edee6c10ece08b7c8')
+noextract=("${_realname}-${pkgver}.tar.gz")
+
+prepare() {
+  bsdtar -xf ${_realname}-${pkgver}.tar.gz --exclude 'uimacnew'
+}
+
+build() {
+  cd $srcdir/${_realname}-${pkgver}
+
+  local ui debug
+  if check_option "debug" "y"; then
+    debug=true
+  else
+    debug=false
+  fi
+
+  for ui in text gtk2; do
+    make clean NAME=unison
+    make mkProjectInfo
+    make UISTYLE=$ui DEBUGGING=$debug THREADS=true OSARCH=win32gnuc NATIVE=true win32rc/unison.res.lib all
+    mv unison.exe unison-$ui.exe
+  done
+}
+
+check() {
+  cd $srcdir/${_realname}-${pkgver}
+  unison-text test
+  unison-text -selftest -ui text -batch
+}
+
+package() {
+  cd ${srcdir}/${_realname}-${pkgver}
+  install -Dm755 "${srcdir}/${_realname}-${pkgver}"/unison-* "${pkgdir}${MINGW_PREFIX}/bin"
+  install -Dm644 "${srcdir}/${_realname}-${pkgver}-manual.html" "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}/manual.html"
+  #install -Dm644 "${srcdir}/${_realname}-${pkgver}/COPYING" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/COPYING"
+}
