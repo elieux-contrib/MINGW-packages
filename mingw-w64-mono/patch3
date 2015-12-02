@@ -1,0 +1,20 @@
+--- Makefile.orig	2015-12-02 18:10:01.185525800 +0100
++++ Makefile	2015-12-02 22:43:29.128252300 +0100
+@@ -384,7 +384,7 @@
+ libmonoboehm_2_0_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+ 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+ 	$(libmonoboehm_2_0_la_CFLAGS) $(CFLAGS) \
+-	$(libmonoboehm_2_0_la_LDFLAGS) $(LDFLAGS) -o $@
++	$(libmonoboehm_2_0_la_LDFLAGS) $(LDFLAGS) -o $@ -liconv
+ am_libmonoboehm_2_0_la_rpath = -rpath \
+ 	$(libdir)
+ #am_libmonoboehm_2_0_la_rpath =  \
+@@ -401,7 +401,7 @@
+ libmonosgen_2_0_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+ 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+ 	$(libmonosgen_2_0_la_CFLAGS) $(CFLAGS) \
+-	$(libmonosgen_2_0_la_LDFLAGS) $(LDFLAGS) -o $@
++	$(libmonosgen_2_0_la_LDFLAGS) $(LDFLAGS) -o $@ -liconv
+ am_libmonosgen_2_0_la_rpath = -rpath \
+ 	$(libdir)
+ #am_libmonosgen_2_0_la_rpath =  \

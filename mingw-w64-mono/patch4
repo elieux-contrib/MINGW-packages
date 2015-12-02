@@ -1,0 +1,11 @@
+--- Makefile.orig	2015-12-02 18:09:56.786965100 +0100
++++ Makefile	2015-12-02 22:48:52.431742700 +0100
+@@ -125,7 +125,7 @@
+ am__v_lt_1 = 
+ libtest_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+ 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libtest_la_CFLAGS) \
+-	$(CFLAGS) $(libtest_la_LDFLAGS) $(LDFLAGS) -o $@
++	$(CFLAGS) $(libtest_la_LDFLAGS) $(LDFLAGS) -o $@ -liconv
+ AM_V_P = $(am__v_P_$(V))
+ am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
+ am__v_P_0 = false

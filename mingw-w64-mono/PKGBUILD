@@ -36,44 +36,45 @@ prepare() {
 
 build() {
   mkdir -p "${srcdir}"/build-${CARCH}
-  cd "${srcdir}"/build-${CARCH}
-
-  # build mono
-  ../${_realname}-${pkgver%.*}/configure \
-    --prefix=${MINGW_PREFIX} \
-    --build=${MINGW_CHOST} \
-    --host=${MINGW_CHOST} \
-    --sysconfdir=${MINGW_PREFIX}/etc \
-    --bindir=${MINGW_PREFIX}/bin \
-    --sbindir=${MINGW_PREFIX}/bin \
-    --disable-quiet-build \
-    --disable-system-aot \
-    --disable-static \
-    --with-mcs-docs=no
-    # --enable-explicit-deps \
-    # --disable-glibtest \
-    # --disable-modules \
-    # --disable-cups \
-    # --disable-test-print-backend \
-    # --disable-gtk-doc \
-    # --disable-man \
-    # --with-included-immodules \
-    # --without-x
-  make
-
-  # build jay
-  cd mcs/jay
-  make
+#  cp -rf "${srcdir}"/${_realname}-${pkgver%.*}/* "${srcdir}"/build-${CARCH}
+#  cd "${srcdir}"/build-${CARCH}
+#
+#  # build mono
+#  # ../${_realname}-${pkgver%.*}/configure \
+#  ./configure \
+#    --prefix=${MINGW_PREFIX} \
+#    --build=${MINGW_CHOST} \
+#    --host=${MINGW_CHOST} \
+#    --sysconfdir=${MINGW_PREFIX}/etc \
+#    --bindir=${MINGW_PREFIX}/bin \
+#    --sbindir=${MINGW_PREFIX}/bin \
+#    --disable-quiet-build \
+#    --disable-system-aot \
+#    --disable-static \
+#    --with-mcs-docs=no
+#    # --enable-explicit-deps \
+#    # --disable-glibtest \
+#    # --disable-modules \
+#    # --disable-cups \
+#    # --disable-test-print-backend \
+#    # --disable-gtk-doc \
+#    # --disable-man \
+#    # --with-included-immodules \
+#    # --without-x
+#  make
+#
+#  cd mcs
+#  MSYS2_ARG_CONV_EXCL="/no;/unsafe;/r:;/debug;/out;/lib;/i;/f;/d:;/root;/package;/resource:" make
 }
 
 package() {
   cd "${srcdir}"/build-${CARCH}
-  make DESTDIR="${pkgdir}" install
+  MSYS2_ARG_CONV_EXCL="/no;/unsafe;/r:;/debug;/out;/lib;/i;/f;/d:;/root;/package;/resource:" make DESTDIR="${pkgdir}" install
 
   # install jay
-  pushd "${srcdir}"/build-${CARCH}/mcs/jay
-  make DESTDIR="${pkgdir}" prefix=${MINGW_PREFIX} INSTALL=../../install-sh install
-  popd
+  # pushd "${srcdir}"/build-${CARCH}/mcs/jay
+  # make DESTDIR="${pkgdir}" prefix=${MINGW_PREFIX} INSTALL=../../install-sh install
+  # popd
 
   # install license
   mkdir -p "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}

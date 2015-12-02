@@ -1,0 +1,11 @@
+--- Makefile.orig	2015-12-02 18:10:23.635531200 +0100
++++ Makefile	2015-12-02 22:52:36.380200400 +0100
+@@ -168,7 +168,7 @@
+ libMonoPosixHelper_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+ 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+ 	$(AM_CFLAGS) $(CFLAGS) $(libMonoPosixHelper_la_LDFLAGS) \
+-	$(LDFLAGS) -o $@
++	$(LDFLAGS) -o $@ -liconv
+ libMonoSupportW_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+ 	$(am__DEPENDENCIES_1)
+ am_libMonoSupportW_la_OBJECTS = supportw.lo support-heap.lo
