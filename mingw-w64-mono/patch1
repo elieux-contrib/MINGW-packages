@@ -1,0 +1,14 @@
+--- gcconfig.h.orig	2015-09-24 11:36:09.000000000 +0200
++++ gcconfig.h	2015-12-02 16:08:49.353400600 +0100
+@@ -454,11 +454,6 @@
+ #   define CYGWIN32
+ #   define mach_type_known
+ # endif
+-# if defined(__MINGW32__)
+-#   define I386
+-#   define MSWIN32
+-#   define mach_type_known
+-# endif
+ # if defined(__BORLANDC__)
+ #   define I386
+ #   define MSWIN32

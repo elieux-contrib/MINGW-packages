@@ -1,0 +1,9 @@
+post_install() {
+    post_upgrade
+}
+
+post_upgrade() {
+    local _mingw_prefix=mingw32
+    
+    cert-sync ${_mingw_prefix}/ssl/certs/ca-certificates.crt
+}
