@@ -66,12 +66,12 @@ build() {
 #  make
 #
 #  cd mcs
-#  MSYS2_ARG_CONV_EXCL="/no;/unsafe;/r:;/debug;/out;/lib;/i;/f;/d:;/root;/package;/resource:" make
+#  MSYS2_ARG_CONV_EXCL="/no;/unsafe;/r:;/debug;/out;/lib;/i;/f;/d:;/root;/package;/resource:;/keyfile:" make
 }
 
 package() {
   cd "${srcdir}"/build-${CARCH}
-  MSYS2_ARG_CONV_EXCL="/no;/unsafe;/r:;/debug;/out;/lib;/i;/f;/d:;/root;/package;/resource:" make DESTDIR="${pkgdir}" install
+  MSYS2_ARG_CONV_EXCL="/no;/unsafe;/r:;/debug;/out;/lib;/i;/f;/d:;/root;/package;/resource:;/keyfile:" make DESTDIR="${pkgdir}" install
 
   # install jay
   # pushd "${srcdir}"/build-${CARCH}/mcs/jay
