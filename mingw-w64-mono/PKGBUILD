@@ -35,6 +35,8 @@ prepare() {
 }
 
 build() {
+# jon_y: Elieux: try updating libtool
+
   mkdir -p "${srcdir}"/build-${CARCH}
 #  cp -rf "${srcdir}"/${_realname}-${pkgver%.*}/* "${srcdir}"/build-${CARCH}
 #  cd "${srcdir}"/build-${CARCH}
