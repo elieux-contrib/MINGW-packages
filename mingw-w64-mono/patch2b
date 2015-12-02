@@ -1,0 +1,13 @@
+--- vasprintf.h.orig	2015-12-02 20:28:33.111383600 +0100
++++ vasprintf.h	2015-12-02 20:29:02.145738100 +0100
+@@ -4,8 +4,10 @@
+ #include <stdarg.h>
+ #include <config.h>
+ 
++/*
+ #ifndef HAVE_VASPRINTF
+ int vasprintf(char **ret, const char *fmt, va_list ap);
+ #endif
++*/
+ 
+ #endif /* __VASPRINTF_H */

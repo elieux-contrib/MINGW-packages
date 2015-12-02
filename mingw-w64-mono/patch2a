@@ -1,0 +1,16 @@
+--- vasprintf.c.orig	2015-12-02 20:28:35.405231500 +0100
++++ vasprintf.c	2015-12-02 20:29:47.250825700 +0100
+@@ -2,6 +2,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
++/*
+ int vasprintf(char **ret, const char *fmt, va_list ap)
+ {
+ 	char *buf;
+@@ -28,4 +29,5 @@
+ 	va_end(ap2);
+ 	return len;
+ }
++*/
+ 
