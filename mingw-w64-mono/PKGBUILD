@@ -4,30 +4,32 @@
 
 _realname=mono
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=3.10.0
+pkgver=4.2.1.102
 pkgrel=1
 pkgdesc="Free implementation of the .NET platform including runtime and compiler (mingw-w64)"
 url="http://www.mono-project.com/"
 license=('GPL' 'LGPL2.1' 'MPL' 'custom:MITX11')
 arch=('any')
-makedepends=("${MINGW_PACKAGE_PREFIX}-bison")
+#makedepends=("${MINGW_PACKAGE_PREFIX}-bison")
 depends=("${MINGW_PACKAGE_PREFIX}-zlib"
+         "${MINGW_PACKAGE_PREFIX}-ca-certificates"
          "${MINGW_PACKAGE_PREFIX}-libiconv"
          "${MINGW_PACKAGE_PREFIX}-python3")
 options=('!makeflags')
 source=(http://download.mono-project.com/sources/mono/${_realname}-${pkgver}.tar.bz2
-        mono.binfmt.d
         sgen_fix.patch
         build_fix.patch
-        Microsoft.Portable.Common.targets)
-md5sums=('8c79f38bcab3ad0cf65728ca4c76b3c6'
-         'b9ef8a65fea497acf176cca16c1e2402'
+        Microsoft.Portable.Common.targets
+        fix-zlib-helper.patch)
+md5sums=('74f92eccf51e59fb626bbdd39fa89229'
          '8a700b94bff7a913f920e95890d2fb4c'
          '30a5af1a4ff50b98f9e73cc2ae554115'
-         'acbffadb0ac233c494b40dd5e79209a5')
+         'acbffadb0ac233c494b40dd5e79209a5'
+         '62912ad289535bf841c140727e5c1165')
+install="${_realname}-${CARCH}.install"
 
 prepare() {
-  cd "${srcdir}"/${_realname}-${pkgver}
+  cd "${srcdir}"/${_realname}-${pkgver%.*}
   # patch -p1 < ../build_fix.patch
   # cp ../Microsoft.Portable.Common.targets mcs/tools/xbuild/targets/
 }
@@ -37,7 +39,7 @@ build() {
   cd "${srcdir}"/build-${CARCH}
 
   # build mono
-  ../${_realname}-${pkgver}/configure \
+  ../${_realname}-${pkgver%.*}/configure \
     --prefix=${MINGW_PREFIX} \
     --build=${MINGW_CHOST} \
     --host=${MINGW_CHOST} \
@@ -48,6 +50,15 @@ build() {
     --disable-system-aot \
     --disable-static \
     --with-mcs-docs=no
+    # --enable-explicit-deps \
+    # --disable-glibtest \
+    # --disable-modules \
+    # --disable-cups \
+    # --disable-test-print-backend \
+    # --disable-gtk-doc \
+    # --disable-man \
+    # --with-included-immodules \
+    # --without-x
   make
 
   # build jay
@@ -64,13 +75,10 @@ package() {
   make DESTDIR="${pkgdir}" prefix=${MINGW_PREFIX} INSTALL=../../install-sh install
   popd
 
-  # install binfmt conf file and pathes
-  # install -D -m644 "${srcdir}"/mono.binfmt.d "${pkgdir}"/usr/lib/binfmt.d/mono.conf
-
-  #install license
+  # install license
   mkdir -p "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}
   install -m644 mcs/MIT.X11 "${pkgdir}"${MINGW_PREFIX}usr/share/licenses/${_realname}/
 
-  #fix .pc file to be able to request mono on what it depends, fixes #go-oo build
+  # fix .pc file to be able to request mono on what it depends, fixes #go-oo build
   sed -i -e "s:#Requires:Requires:" "${pkgdir}"${MINGW_PREFIX}/lib/pkgconfig/mono.pc
 }
