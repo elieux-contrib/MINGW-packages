@@ -1,0 +1,54 @@
+# Maintainer: David Macek <david.macek.0@gmail.com>
+
+_realname=qbittorrent
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=3.3.12
+pkgrel=1
+pkgdesc="An advanced BitTorrent client programmed in C++, based on Qt toolkit and libtorrent-rasterbar (mingw-w64)"
+arch=('any')
+url="http://www.qbittorrent.org"
+license=('custom' 'GPL')
+makedepends=("${MINGW_PACKAGE_PREFIX}-desktop-file-utils")
+depends=("${MINGW_PACKAGE_PREFIX}-qt5"
+         "${MINGW_PACKAGE_PREFIX}-libtorrent-rasterbar"
+         "${MINGW_PACKAGE_PREFIX}-boost"
+         "${MINGW_PACKAGE_PREFIX}-hicolor-icon-theme")
+optdepends=("${MINGW_PACKAGE_PREFIX}-python3: needed for torrent search tab")
+source=(https://downloads.sourceforge.net/sourceforge/qbittorrent/${_realname}-${pkgver}.tar.xz{,.asc}
+        0001-qbittorrent-3.3.12-winconf.patch
+        0002-qbittorrent-3.3.12-manifest.patch)
+sha256sums=('56528c47f09b316ecf682e3896157c76c18898ef996728b0c5186e05a711466f'
+            'SKIP'
+            '423be3b3076b9642ac6e745a5456dec53c85fb598ae083a91246bbe7f6817718'
+            'ef09285b02331d88e94209b5096dc90ffe269c67e3b5e87a39c52a1fb9d1a657')
+validpgpkeys=('D8F3DA77AAC6741053599C136E4A2D025B7CC9A2')
+
+prepare() {
+  cd "${srcdir}"/${_realname}-${pkgver}
+  patch -p0 -i "${srcdir}/0001-qbittorrent-3.3.12-winconf.patch"
+  patch -p1 -i "${srcdir}/0002-qbittorrent-3.3.12-manifest.patch" # https://patch-diff.githubusercontent.com/raw/qbittorrent/qBittorrent/pull/6658.diff
+}
+
+build() {
+  cd "${srcdir}"
+ # [ -d build-${CARCH} ] && rm -rf build-${CARCH}
+ # mkdir build-${CARCH} && cd "${srcdir}"/build-${CARCH}
+  mkdir build-${CARCH} -p && cd "${srcdir}"/build-${CARCH}
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  ${MINGW_PREFIX}/bin/cmake \
+    -G"MSYS Makefiles" \
+    -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+    -DCMAKE_BUILD_TYPE="Release" \
+    -Wno-dev \
+    ../${_realname}-${pkgver}
+
+  make VERBOSE=1
+}
+
+package() {
+  cd "${srcdir}"/build-${CARCH}
+  make DESTDIR="$pkgdir/" install
+  install -Dm644 "$srcdir/${_realname}-${pkgver}/COPYING" "$pkgdir${MINGW_PREFIX}/share/licenses/${_realname}/COPYING"
+}
