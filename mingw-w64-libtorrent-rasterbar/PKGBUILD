@@ -5,7 +5,7 @@
 _realname=libtorrent-rasterbar
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=1.0.7
+pkgver=1.1.3
 pkgrel=1
 pkgdesc="libtorrent is a feature complete C++ bittorrent implementation focusing on efficiency and scalability (mingw-w64)"
 arch=('any')
@@ -18,13 +18,16 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
              "${MINGW_PACKAGE_PREFIX}-pkg-config")
 options=(staticlibs strip)
 source=("https://github.com/arvidn/libtorrent/releases/download/libtorrent-${pkgver//./_}/${_realname}-${pkgver}.tar.gz"
-        cmake_pkg_config.patch)
-sha256sums=('3e16e024b175fefada17471c659fdbcfab235f9619d4f0913faa13cb02ca8d83'
-            '30b8243df199df1cd512a1655e1a852b5415e6f83193901fc4c45a98cd4f969f')
+        cmake_pkg_config.patch
+        winxp.patch)
+sha256sums=('44196a89932c26528f5db19289d0f0f4130730a61dccc61c9f1eac9ad3e881d8'
+            '30b8243df199df1cd512a1655e1a852b5415e6f83193901fc4c45a98cd4f969f'
+            '8b7fdb70d0dd6c482ff810f66c64590a7a3b025da1121e01422a61ab545673f4')
 
 prepare() {
   cd "${srcdir}/${_realname}-${pkgver}"
   patch -p0 -i ${srcdir}/cmake_pkg_config.patch
+  patch -p0 -i ${srcdir}/winxp.patch
 }
 
 build() {
